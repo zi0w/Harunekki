@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,10 +28,14 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  justify-content: center; /* 가로 중앙 */
+  align-items: center; /* 세로 중앙 */
+  min-width: 100vw;
   min-height: 100vh;
+  background-color: #e7e7e7;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -36,22 +44,26 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
+  outline: none; /* 포커스 테두리 제거 */
+  box-shadow: none; /* 포커스 시 생기는 그림자 제거 */
+  background-color: transparent; /* 클릭 시 깜빡임 방지 */
+  border: none; /* 기본 테두리 제거 */
 }
 button:hover {
   border-color: #646cff;
 }
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:focus-visible,
+button:active {
+  outline: none;
+  box-shadow: none;
+  background-color: transparent;
 }
 
 @media (prefers-color-scheme: light) {
@@ -63,6 +75,6 @@ button:focus-visible {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #ffffff;
   }
 }
