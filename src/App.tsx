@@ -1,13 +1,7 @@
-import { Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import { ROUTES } from './constants/routes';
+import Router from '@/components/shared/Router';
 
-function App() {
-  return (
-    <Routes>
-      <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-    </Routes>
-  );
-}
+const App = () => {
+  return <Router />;
+};
 
 export default App;
