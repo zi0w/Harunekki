@@ -19,17 +19,17 @@ const LoginPage = () => {
     <div className="flex flex-col items-center mt-[164px]">
       <img src={titleImage} width={105} height={154} />
       <div className="flex flex-col mt-[197.83px] gap-4">
-        <button
-          onClick={() => signIn('facebook')}
-          className="w-[335px] h-[52px]"
-        >
-          <img src={naverLoginBtn} width={335} height={52} />
-        </button>
         <button onClick={() => signIn('google')} className="w-[335px] h-[52px]">
           <img src={googleLoginBtn} width={335} height={52} />
         </button>
         <button onClick={() => signIn('kakao')} className="w-[335px] h-[52px]">
           <img src={kakaoLoginBtn} width={335} height={52} />
+        </button>
+        <button
+          onClick={() => signIn('facebook')}
+          className="w-[335px] h-[52px]"
+        >
+          <img src={naverLoginBtn} width={335} height={52} />
         </button>
       </div>
     </div>
