@@ -1,4 +1,5 @@
 import Layout from '@/components/shared/Layout';
+import AuthCallback from '@/pages/auth/AuthCallback';
 import LoginPage from '@/pages/auth/LoginPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
 import HomePage from '@/pages/home/HomePage';
@@ -11,6 +12,7 @@ const Router = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="diary" element={<DiaryPage />} />
         </Route>
       </Routes>
