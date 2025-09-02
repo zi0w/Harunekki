@@ -1,54 +1,37 @@
-import kakaologinicon from '@/assets/icon/loginicon/kakao_login_large_wide.png';
+import titleImage from '@/assets/icons/login/login_main.png';
+import naverLoginBtn from '@/assets/icons/login/login_naver.png';
+import googleLoginBtn from '@/assets/icons/login/login_google.png';
+import kakaoLoginBtn from '@/assets/icons/login/login_kakao.png';
+import { supabase } from '@/lib/supabase/supabase';
 
 const LoginPage = () => {
-
-  // 이 부분 코드에서 필요 없어 보여서 주석처리 했는데 안 쓸거면 지워도 될듯!
-
-
-  // const navigate = useNavigate();
-
-  // const goToResult = () => {
-  //   navigate('/login'); // ROUTES 제거하고 직접 경로로 작성
-  // };
-
-  // ------------------------------------------------------------------
-
-  const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
-  const REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
-
-  const handleKakaoLogin = () => {
-    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
-    window.location.href = KAKAO_AUTH_URL;
+  const signIn = async (provider: 'google' | 'kakao' | 'facebook') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin + '/auth/callback',
+      },
+    });
+    if (error) alert(error.message);
   };
 
   return (
-    <div className="mt-[32.5rem] flex flex-col items-center gap-[0.625rem]">
-      <button
-        onClick={handleKakaoLogin}
-        className="flex justify-center items-center w-[20.9375rem] h-[3rem] rounded-[0.75rem] p-0 overflow-hidden appearance-none border-none bg-transparent"
-      >
-        <img
-          src={kakaologinicon}
-          alt="카카오 로그인"
-          className="w-[20.9375rem] h-[3rem] object-cover"
-        />
-      </button>
-
-      {/* 아래 버튼들도 예시용이라면 제거 가능 */}
-      <button className="flex justify-center items-center w-[20.9375rem] h-[3rem] rounded-[0.75rem] p-0 overflow-hidden appearance-none border-none bg-transparent">
-        <img
-          src={kakaologinicon}
-          alt="카카오 로그인"
-          className="w-[20.9375rem] h-[3rem] object-cover"
-        />
-      </button>
-      <button className="flex justify-center items-center w-[20.9375rem] h-[3rem] rounded-[0.75rem] p-0 overflow-hidden appearance-none border-none bg-transparent">
-        <img
-          src={kakaologinicon}
-          alt="카카오 로그인"
-          className="w-[20.9375rem] h-[3rem] object-cover"
-        />
-      </button>
+    <div className="flex flex-col items-center mt-[164px]">
+      <img src={titleImage} width={105} height={154} />
+      <div className="flex flex-col mt-[197.83px] gap-2">
+        <button onClick={() => signIn('google')} className="w-[335px] h-[52px]">
+          <img src={googleLoginBtn} width={335} height={52} />
+        </button>
+        <button onClick={() => signIn('kakao')} className="w-[335px] h-[52px]">
+          <img src={kakaoLoginBtn} width={335} height={52} />
+        </button>
+        <button
+          onClick={() => signIn('facebook')}
+          className="w-[335px] h-[52px]"
+        >
+          <img src={naverLoginBtn} width={335} height={52} />
+        </button>
+      </div>
     </div>
   );
 };
