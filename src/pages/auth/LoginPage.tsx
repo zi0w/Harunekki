@@ -18,7 +18,7 @@ const LoginPage = () => {
   return (
     <div className="flex flex-col items-center mt-[164px]">
       <img src={titleImage} width={105} height={154} />
-      <div className="flex flex-col mt-[197.83px] gap-4">
+      <div className="flex flex-col mt-[197.83px] gap-2">
         <button onClick={() => signIn('google')} className="w-[335px] h-[52px]">
           <img src={googleLoginBtn} width={335} height={52} />
         </button>
