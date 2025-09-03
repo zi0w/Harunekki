@@ -16,49 +16,41 @@ const items = [
   { to: '/search', label: '탐색', icon: search, iconActive: searchActive },
   { to: '/likes', label: '찜', icon: likes, iconActive: likesActive },
   { to: '/diary', label: '다이어리', icon: diary, iconActive: diaryActive },
-  { to: '/mypage', label: '마이페이지', icon: mypage, iconActive: mypageActive },
+  {
+    to: '/mypage',
+    label: '마이페이지',
+    icon: mypage,
+    iconActive: mypageActive,
+  },
 ];
 
 export default function BottomNav() {
   return (
     <nav
       className="
-        fixed bottom-0 left-1/2 -translate-x-1/2
-        w-[375px] max-w-full
+        h-[64px] w-full
         bg-white/95 backdrop-blur border-t
-        z-40
         pb-[calc(env(safe-area-inset-bottom,0px))]
       "
-      role="navigation"
       aria-label="하단 네비게이션"
     >
-      <ul className="grid grid-cols-5">
-        {items.map(({ to, label, icon, iconActive, end }) => (
-          <li key={to}>
+      <ul className="grid grid-cols-5 h-full">
+        {items.map(({ to, icon, iconActive, end, alt }) => (
+          <li key={to} className="h-full">
             <NavLink
               to={to}
               end={end}
-              className={({ isActive }) =>
-                [
-                  'relative flex flex-col items-center justify-center gap-1 py-2 text-[11px]',
-                  'transition-colors select-none',
-                  isActive ? 'text-black' : 'text-[#8B92A1]',
-                ].join(' ')
-              }
-              aria-label={label}
+              className="flex h-full items-center justify-center"
             >
               {({ isActive }) => (
-                <>
-                  <img
-                    src={isActive ? iconActive : icon}
-                    alt=""
-                    width={24}
-                    height={24}
-                    draggable={false}
-                    className="pointer-events-none"
-                  />
-                  <span className="leading-none">{label}</span>
-                </>
+                <img
+                  src={isActive ? iconActive : icon}
+                  alt={alt}
+                  width={48}
+                  height={48}
+                  draggable={false}
+                  className="pointer-events-none select-none"
+                />
               )}
             </NavLink>
           </li>
