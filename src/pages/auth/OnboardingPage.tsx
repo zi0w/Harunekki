@@ -84,14 +84,14 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col mx-auto max-w-[375px] px-5 mt-10 gap-8">
+    <div className="flex flex-col mx-auto max-w-[375px] mt-10 gap-8">
       {/* 이름 */}
       <div>
         <span className="text-base text-[#383D48] font-kakaoSmall font-bold">
           이름
         </span>
         <input
-          className="mt-3 w-full rounded-lg border p-2 bg-[#FDFDFE] text-black outline-none focus:ring-2 focus:ring-black/10"
+          className="mt-3 w-full rounded-lg border p-2 bg-[#FDFDFE] text-black outline-none focus:ring-1 focus:ring-black/10"
           value={name}
           placeholder="이름을 입력해주세요."
           onChange={(e) => setName(e.target.value)}
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
         </span>
         <input
           type="number"
-          className="mt-3 w-full rounded-lg border p-2 bg-[#FDFDFE] text-black outline-none focus:ring-2 focus:ring-black/10"
+          className="mt-3 w-full rounded-lg border p-2 bg-[#FDFDFE] text-black outline-none focus:ring-1 focus:ring-black/10"
           value={age}
           placeholder="나이를 입력해주세요."
           onChange={(e) => setAge(e.target.value)} // 문자열 그대로 관리
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
         type="button"
         onClick={submit}
         disabled={saving}
-        className="w-full rounded-lg bg-[#EF6F6F] shadow-sm text-white font-kakaoBig py-3 disabled:opacity-60 mt-[260px]"
+        className="w-full rounded-lg bg-[#EF6F6F] shadow-sm text-white font-kakaoBig py-3 disabled:opacity-60 mt-[200px]"
       >
         {saving ? '저장 중…' : '완료'}
       </button>

@@ -28,14 +28,15 @@ export default function BottomNav() {
   return (
     <nav
       className="
-        h-[64px] w-full
-        bg-white/95 backdrop-blur border-t
-        pb-[calc(env(safe-area-inset-bottom,0px))]
+        h-[68px] w-full
+        bg-[#FDFDFE]] backdrop-blur border-t
+        mb-[34px]
+        px-5
       "
       aria-label="하단 네비게이션"
     >
       <ul className="grid grid-cols-5 h-full">
-        {items.map(({ to, icon, iconActive, end, alt }) => (
+        {items.map(({ to, icon, iconActive, end }) => (
           <li key={to} className="h-full">
             <NavLink
               to={to}
@@ -45,7 +46,6 @@ export default function BottomNav() {
               {({ isActive }) => (
                 <img
                   src={isActive ? iconActive : icon}
-                  alt={alt}
                   width={48}
                   height={48}
                   draggable={false}
