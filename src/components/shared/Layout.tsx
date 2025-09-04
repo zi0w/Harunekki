@@ -23,7 +23,7 @@ const Layout = () => {
         </main>
 
         {/* 하단 네비 자리: 높이 고정 */}
-        <footer className="h-[102px] shrink-0">
+        <footer className="h-[102px] shrink-0 bg-[#FDFDFE]">
           {!hideFooter && <BottomNav />}
         </footer>
       </div>
