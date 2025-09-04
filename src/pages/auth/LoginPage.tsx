@@ -1,5 +1,5 @@
 import titleImage from '@/assets/icons/login/login_main.png';
-import naverLoginBtn from '@/assets/icons/login/login_naver.png';
+import facebookLoginBtn from '@/assets/icons/login/login_facebook.png';
 import googleLoginBtn from '@/assets/icons/login/login_google.png';
 import kakaoLoginBtn from '@/assets/icons/login/login_kakao.png';
 import { supabase } from '@/lib/supabase/supabase';
@@ -16,9 +16,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center mt-[164px]">
+    <div className="flex flex-col items-center mt-[124px]">
       <img src={titleImage} width={105} height={154} />
-      <div className="flex flex-col mt-[197.83px] gap-2">
+      <div className="flex flex-col mt-[196px] gap-2">
         <button onClick={() => signIn('google')} className="w-[335px] h-[52px]">
           <img src={googleLoginBtn} width={335} height={52} />
         </button>
@@ -29,7 +29,7 @@ const LoginPage = () => {
           onClick={() => signIn('facebook')}
           className="w-[335px] h-[52px]"
         >
-          <img src={naverLoginBtn} width={335} height={52} />
+          <img src={facebookLoginBtn} width={335} height={52} />
         </button>
       </div>
     </div>

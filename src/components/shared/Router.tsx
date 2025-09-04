@@ -4,6 +4,9 @@ import LoginPage from '@/pages/auth/LoginPage';
 import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
 import HomePage from '@/pages/home/HomePage';
+import LikesPage from '@/pages/likes/LikesPage';
+import MyPage from '@/pages/mypage/MyPage';
+import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 const Router = () => {
@@ -15,7 +18,10 @@ const Router = () => {
           <Route path="login" element={<LoginPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="likes" element={<LikesPage />} />
           <Route path="diary" element={<DiaryPage />} />
+          <Route path="mypage" element={<MyPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
