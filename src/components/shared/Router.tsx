@@ -5,6 +5,9 @@ import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
 import HomePage from '@/pages/home/HomePage';
 import LikesPage from '@/pages/likes/LikesPage';
+import MyBadges from '@/pages/mypage/MyBadges';
+import MyInfo from '@/pages/mypage/MyInfo';
+import MyInfoEdit from '@/pages/mypage/MyInfoEdit';
 import MyPage from '@/pages/mypage/MyPage';
 import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -22,6 +25,9 @@ const Router = () => {
           <Route path="likes" element={<LikesPage />} />
           <Route path="diary" element={<DiaryPage />} />
           <Route path="mypage" element={<MyPage />} />
+          <Route path="mypage/info" element={<MyInfo />} />
+          <Route path="mypage/info/edit" element={<MyInfoEdit />} />
+          <Route path="mypage/badges" element={<MyBadges />} />
         </Route>
       </Routes>
     </BrowserRouter>
