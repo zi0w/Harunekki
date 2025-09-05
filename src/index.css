@@ -5,6 +5,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+
 /* Kakao Big Sans Bold */
 @font-face {
   font-family: 'KakaoBigSans';
