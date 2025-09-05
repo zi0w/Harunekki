@@ -1,5 +1,3 @@
-import React from 'react';
-
 const MyBadges = () => {
   return <div>MyBadges</div>;
 };

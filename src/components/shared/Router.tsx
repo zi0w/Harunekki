@@ -9,6 +9,7 @@ import MyBadges from '@/pages/mypage/MyBadges';
 import MyInfo from '@/pages/mypage/MyInfo';
 import MyInfoEdit from '@/pages/mypage/MyInfoEdit';
 import MyPage from '@/pages/mypage/MyPage';
+import RecommendPage from '@/pages/recommend/RecommendPage';
 import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -18,6 +19,7 @@ const Router = () => {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/recommend" element={<RecommendPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="onboarding" element={<OnboardingPage />} />
