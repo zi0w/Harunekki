@@ -29,9 +29,9 @@ export default function BottomNav() {
     <nav
       className="
         h-[68px] w-full
-        bg-[#FDFDFE]] backdrop-blur border-t
-        mb-[34px]
-        px-5
+        bg-[#FDFDFE] backdrop-blur border-t
+        mb-[34px] 
+        px-5 z-40
       "
       aria-label="하단 네비게이션"
     >
