@@ -7,7 +7,6 @@ const Layout = () => {
   const { pathname } = useLocation();
 
   const isAuth = pathname === '/login' || pathname.startsWith('/auth');
-  const isOnboarding = pathname === '/onboarding';
   const isInfo = pathname.startsWith('/mypage/info');
   const isInfoEdit = pathname === '/mypage/info/edit';
   const isBadge = pathname.startsWith('/mypage/badges'); // ← 앞에 슬래시 빠졌던 거도 고쳐줌
