@@ -9,6 +9,7 @@
   display: none;
 }
 .scrollbar-hide {
+  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
@@ -78,6 +79,7 @@ body {
   min-height: 100vh;
   background-color: #e7e7e7;
   overflow-x: hidden;
+  @apply scrollbar-hide;
 }
 
 h1 {

@@ -3,6 +3,8 @@ import AuthCallback from '@/pages/auth/AuthCallback';
 import LoginPage from '@/pages/auth/LoginPage';
 import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
+import SeasonalFoodDetailPage from '@/pages/foods/SeasonalFoodDetailPage';
+import SeasonalFoodsPage from '@/pages/foods/SeasonalFoodsPage';
 import HomePage from '@/pages/home/HomePage';
 import LikesPage from '@/pages/likes/LikesPage';
 import MyBadges from '@/pages/mypage/MyBadges';
@@ -10,6 +12,7 @@ import MyInfo from '@/pages/mypage/MyInfo';
 import MyInfoEdit from '@/pages/mypage/MyInfoEdit';
 import MyPage from '@/pages/mypage/MyPage';
 import RecommendPage from '@/pages/recommend/RecommendPage';
+import HotRestaurantsPage from '@/pages/restaurants/HotRestaurantsPage';
 import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -19,6 +22,12 @@ const Router = () => {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/foods/seasonal" element={<SeasonalFoodsPage />} />
+          <Route
+            path="/foods/seasonal/detail"
+            element={<SeasonalFoodDetailPage />}
+          />
+          <Route path="/restaurants/hot" element={<HotRestaurantsPage />} />
           <Route path="/recommend" element={<RecommendPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />

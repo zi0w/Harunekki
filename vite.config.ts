@@ -10,6 +10,14 @@ export default defineConfig({
     },
   },
   server: {
+    proxy: {
+      '/tourapi': {
+        target: 'https://apis.data.go.kr',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/tourapi/, ''),
+        secure: true,
+      },
+    },
     port: 3000,
   },
 });
