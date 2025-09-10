@@ -203,7 +203,7 @@ export type DetailCommonItem = {
   mapx?: string;
   mapy?: string;
 };
-// src/lib/api/tourapi.ts
+
 export async function fetchDetailCommon(
   contentId: string,
 ): Promise<DetailCommonItem> {
