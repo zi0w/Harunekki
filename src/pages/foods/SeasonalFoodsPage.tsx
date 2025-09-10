@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { fetchAreaBasedList } from '@/lib/api/tourapi';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase/supabase';
 import ArrowLocation from '@/assets/icons/home/location.svg';
+import LikeButton from '@/components/common/LikeButton';
 import { Link } from 'react-router-dom';
 
-type Card = {
+type SeasonalFood = {
   id: string;
-  title: string;
-  location: string;
-  img: string;
-  views: number;
+  name: string;
+  region_code: number | null;
+  months: number[];
+  aliases: string[] | null;
 };
 
 const REGIONS: Array<{ label: string; code?: number }> = [
@@ -21,178 +22,100 @@ const REGIONS: Array<{ label: string; code?: number }> = [
   { label: '세종', code: 8 },
 ];
 
-const FoodCard = ({ item }: { item: Card }) => (
-  <Link
-    to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
-    state={{ item }} // 상세에서 즉시 쓰도록 전달(선택)
-    className="block relative rounded-2xl"
-  >
-    <div className="w-full h-[150px] rounded-2xl overflow-hidden bg-[#f4f5f7]">
-      {item.img ? (
-        <img
-          src={item.img}
-          alt={item.title}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        <div className="w-full h-full bg-[#e9ecf1]" />
-      )}
-    </div>
-    <div className="mt-3 flex flex-col items-start gap-1">
-      <p className="truncate text-[#383D48] font-kakaoSmall text-[16px] leading-6 tracking-[-0.02rem]">
-        {item.title.length > 11 ? item.title.slice(0, 11) + '…' : item.title}
-      </p>
-      <div className="flex items-center gap-1">
-        <img src={ArrowLocation} className="w-4 h-4" alt="" />
-        <p className="text-[#596072] font-kakaoSmall text-[14px] leading-[1.26rem] tracking-[-0.0175rem]">
-          {item.location
-            ? item.location.length > 10
-              ? item.location.slice(0, 10) + '…'
-              : item.location
-            : '주소 정보 없음'}
-        </p>
-      </div>
-    </div>
-  </Link>
-);
+function regionLabel(code?: number | null) {
+  if (!code) return '전국';
+  return REGIONS.find((r) => r.code === code)?.label ?? '전국';
+}
+
+async function fetchFoods(region?: number, onlyThisMonth = true) {
+  const nowMonth = new Date().getMonth() + 1;
+  let q = supabase.from('seasonal_foods').select('*');
+  if (region) q = q.eq('region_code', region);
+  const { data, error } = await q;
+  if (error) throw error;
+  const list = (data ?? []) as SeasonalFood[];
+
+  if (!onlyThisMonth) return list;
+
+  return list.filter((f) => {
+    const arr = (f.months ?? []) as unknown[];
+    // 문자열/숫자 혼재 대비
+    return arr.map((m) => Number(m)).includes(nowMonth);
+  });
+}
+
+async function findFoodThumb(
+  name: string,
+  region?: number,
+  aliases?: string[] | null,
+) {
+  // tour_pois에서 이미지 있는 첫 레코드 하나 찾기
+  const terms = [name, ...(aliases ?? [])];
+  for (const t of terms) {
+    let q = supabase
+      .from('tour_pois')
+      .select('firstimage,firstimage2')
+      .not('firstimage', 'is', null)
+      .limit(1);
+    if (region) q = q.eq('areacode', region);
+    q = q.ilike('title', `%${t}%`);
+    const { data } = await q;
+    const hit = data?.[0];
+    if (hit?.firstimage || hit?.firstimage2) {
+      return hit.firstimage || hit.firstimage2;
+    }
+  }
+  return undefined;
+}
 
 export default function SeasonalFoodsPage() {
   const [activeRegion, setActiveRegion] = useState<number | undefined>(
     undefined,
   );
-  const [items, setItems] = useState<Card[]>([]);
-  const [errMsg, setErrMsg] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [onlyThisMonth, setOnlyThisMonth] = useState(true);
+  const [foods, setFoods] = useState<SeasonalFood[]>([]);
+  const [thumbs, setThumbs] = useState<Record<string, string | undefined>>({});
   const [loading, setLoading] = useState(false);
-
-  // 최신값 유지용 refs
-  const pageRef = useRef(0);
-  const loadingRef = useRef(false);
-  const hasMoreRef = useRef(true);
-  useEffect(() => {
-    hasMoreRef.current = hasMore;
-  }, [hasMore]);
-
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const idSetRef = useRef<Set<string>>(new Set());
+  const [err, setErr] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // 지역 변경 시 초기화
   useEffect(() => {
-    setItems([]);
-    setErrMsg(null);
-    setHasMore(true);
-    pageRef.current = 0;
-    idSetRef.current.clear();
-    abortRef.current?.abort();
-    abortRef.current = null;
-  }, [activeRegion]);
-
-  const loadPage = useCallback(
-    async (nextPage: number) => {
-      if (loadingRef.current) return;
-      if (!hasMoreRef.current && nextPage !== 1) return;
-
-      // 진행 중 요청 취소
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
+    (async () => {
       setLoading(true);
-      loadingRef.current = true;
-      setErrMsg(null);
-
+      setErr(null);
       try {
-        const { items: list, total: totalResp } = await fetchAreaBasedList({
-          areaCode: activeRegion,
-          contentTypeId: 39,
-          pageNo: nextPage,
-          numOfRows: 40, // 왕복 줄이기
-          arrange: 'Q',
-          signal: controller.signal,
-        });
-
-        const mapped: Card[] = (list || []).map((it) => ({
-          id: it.contentid,
-          title: it.title ?? '',
-          location: it.addr1 ?? '',
-          img: it.firstimage || it.firstimage2 || '', // 외부 FALLBACK 제거
-          views: Math.floor(Math.random() * 3000) + 300, // 데모 숫자 유지(원하면 제거 가능)
-        }));
-
-        // 중복 제거
-        const deduped: Card[] = [];
-        for (const m of mapped) {
-          if (!idSetRef.current.has(m.id)) {
-            idSetRef.current.add(m.id);
-            deduped.push(m);
-          }
-        }
-
-        // 병합 후 길이 기준으로 hasMore 계산
-        setItems((prev) => {
-          const merged = nextPage === 1 ? deduped : [...prev, ...deduped];
-          setHasMore((totalResp || 0) > merged.length);
-          return merged;
-        });
-        pageRef.current = nextPage;
-      } catch (e: unknown) {
-        const isAbort = e instanceof DOMException && e.name === 'AbortError';
-        if (!isAbort) {
-          const msg =
-            e instanceof Error ? e.message : '데이터를 불러오지 못했습니다.';
-          setErrMsg(msg);
-        }
+        const list = await fetchFoods(activeRegion, onlyThisMonth);
+        setFoods(list);
+      } catch (e: any) {
+        setErr(e.message ?? '불러오기 실패');
       } finally {
         setLoading(false);
-        loadingRef.current = false;
       }
-    },
-    [activeRegion],
-  );
+    })();
+  }, [activeRegion, onlyThisMonth]);
 
-  // 첫 로드
+  // 썸네일 비동기 수집
   useEffect(() => {
-    loadPage(1);
-  }, [loadPage]);
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
-  // 옵저버 생성(한 번)
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !loadingRef.current && hasMoreRef.current) {
-          loadPage(pageRef.current + 1);
-        }
-      },
-      { root: null, rootMargin: '600px', threshold: 0.01 },
-    );
-    io.observe(sentinelRef.current);
-    observerRef.current = io;
-
-    return () => {
-      io.disconnect();
-      observerRef.current = null;
-    };
-  }, [loadPage]);
-
-  // 초기 kick: 첫 페이지가 화면을 못 채우면 연쇄 로드
-  useEffect(() => {
-    if (!hasMore || loadingRef.current) return;
-    const id = window.setTimeout(() => {
-      const el = sentinelRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      if (rect.top <= window.innerHeight) {
-        loadPage(pageRef.current + 1);
+    (async () => {
+      const map: Record<string, string | undefined> = {};
+      for (const f of foods) {
+        if (ctrl.signal.aborted) return;
+        const img = await findFoodThumb(
+          f.name,
+          f.region_code ?? undefined,
+          f.aliases ?? [],
+        );
+        map[f.id] = img;
       }
-    }, 60);
-    return () => window.clearTimeout(id);
-  }, [items.length, hasMore, loadPage]);
+      if (!ctrl.signal.aborted) setThumbs(map);
+    })();
+
+    return () => ctrl.abort();
+  }, [foods]);
 
   const tabs = useMemo(
     () =>
@@ -203,7 +126,7 @@ export default function SeasonalFoodsPage() {
           className={`relative shrink-0 px-2 py-2 font-kakaoSmall text-[14px] ${
             activeRegion === r.code
               ? 'text-[#EF6F6F] font-bold bg-[#F9FAFB]'
-              : 'text-[#8A8A8A] bg-[#F9FAFB] '
+              : 'text-[#8A8A8A] bg-[#F9FAFB]'
           }`}
         >
           {r.label}
@@ -215,57 +138,90 @@ export default function SeasonalFoodsPage() {
     [activeRegion],
   );
 
-  const skeletons = Array.from({ length: 6 }).map((_, i) => (
-    <div key={i} className="animate-pulse">
-      <div className="w-full h-[150px] bg-[#eee] rounded-2xl" />
-      <div className="mt-3 space-y-2">
-        <div className="h-4 w-3/4 bg-[#eee] rounded" />
-        <div className="h-3 w-1/2 bg-[#eee] rounded" />
-        <div className="h-3 w-1/3 bg-[#eee] rounded" />
-      </div>
-    </div>
-  ));
-
   return (
     <div className="mx-auto w-full max-w-[20.9375rem] overflow-x-hidden">
-      {/* 상단 탭 */}
       <div className="mt-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
         <div className="inline-flex gap-3 px-2">{tabs}</div>
       </div>
 
-      {/* 상태 메시지 */}
-      {errMsg && (
-        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {errMsg}
-        </div>
-      )}
-
-      {/* 카드 그리드 */}
-      <div className="mt-4 grid grid-cols-2 gap-y-6 gap-x-4">
-        {items.length === 0 && loading
-          ? skeletons
-          : items.map((it) => <FoodCard key={it.id} item={it} />)}
+      <div className="mt-3 px-2">
+        <label className="inline-flex items-center gap-2 text-[13px] text-[#596072]">
+          <input
+            type="checkbox"
+            className="accent-[#EF6F6F]"
+            checked={onlyThisMonth}
+            onChange={(e) => setOnlyThisMonth(e.target.checked)}
+          />
+          이번 달 제철만 보기
+        </label>
       </div>
 
-      {/* 빈 상태 */}
-      {!loading && !errMsg && items.length === 0 && (
+      {err && (
+        <div className="mt-3 mx-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {err}
+        </div>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-y-6 gap-x-4 px-2">
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="w-full h-[150px] bg-[#eee] rounded-2xl" />
+                <div className="mt-3 space-y-2">
+                  <div className="h-4 w-3/4 bg-[#eee] rounded" />
+                  <div className="h-3 w-1/2 bg-[#eee] rounded" />
+                </div>
+              </div>
+            ))
+          : foods.map((f) => (
+              <Link
+                key={f.id}
+                to={`/foods/seasonal/detail?id=${encodeURIComponent(f.id)}`}
+                state={{
+                  item: {
+                    id: f.id,
+                    title: f.name,
+                    region: f.region_code ?? undefined,
+                  },
+                }}
+                className="block relative rounded-2xl"
+              >
+                <div className="w-full h-[150px] rounded-2xl overflow-hidden bg-[#f4f5f7]">
+                  {thumbs[f.id] ? (
+                    <img
+                      src={thumbs[f.id]}
+                      alt={f.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#e9ecf1]" />
+                  )}
+                </div>
+
+                <div className="mt-3 flex flex-col items-start gap-1">
+                  <p className="truncate text-[#383D48] font-kakaoSmall text-[16px] leading-6 tracking-[-0.02rem]">
+                    {f.name.length > 11 ? f.name.slice(0, 11) + '…' : f.name}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <img src={ArrowLocation} className="w-4 h-4" alt="" />
+                    <p className="text-[#596072] font-kakaoSmall text-[14px] leading-[1.26rem] tracking-[-0.0175rem]">
+                      {regionLabel(f.region_code)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 음식 좋아요(개념 좋아요) */}
+                <div className="absolute right-2 top-2">
+                  <LikeButton type="food" id={f.id} />
+                </div>
+              </Link>
+            ))}
+      </div>
+
+      {!loading && !err && foods.length === 0 && (
         <div className="mt-8 text-center text-[#8A8A8A] text-sm">
           표시할 결과가 없습니다.
-        </div>
-      )}
-
-      {/* sentinel: 보이면 다음 페이지 로드 */}
-      <div ref={sentinelRef} className="h-10" />
-
-      {/* 로딩/끝 상태 */}
-      {loading && items.length > 0 && (
-        <div className="my-4 text-center text-[#8A8A8A] text-sm">
-          불러오는 중…
-        </div>
-      )}
-      {!loading && items.length > 0 && !hasMore && (
-        <div className="my-4 text-center text-[#8A8A8A] text-sm">
-          마지막 결과입니다.
         </div>
       )}
 

@@ -1,21 +1,8 @@
 // src/pages/restaurants/HotRestaurantsPage.tsx
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { fetchAreaBasedList } from '@/lib/api/tourapi';
-import ArrowLocation from '@/assets/icons/home/location.svg';
-import { Link } from 'react-router-dom';
-import LikeLocation from '@/assets/icons/home/heart.svg';
-import HeartIcon from '@/assets/icons/like/heart.svg';
-import HeartFilledIcon from '@/assets/icons/like/heartClicked.svg';
-
-type Card = {
-  id: string;
-  title: string;
-  location: string;
-  img: string;
-  views: number;
-  liked: boolean;
-  likeCount: number;
-};
+import CardItem, { type Card } from '@/components/layout/CardItem';
+import { fetchLikeCounts, fetchMyLiked } from '@/lib/supabase/likes';
 
 const REGIONS: Array<{ label: string; code?: number }> = [
   { label: '전체', code: undefined },
@@ -26,88 +13,6 @@ const REGIONS: Array<{ label: string; code?: number }> = [
   { label: '대전', code: 3 },
   { label: '세종', code: 8 },
 ];
-
-const CardItem = ({
-  item,
-  setItems,
-}: {
-  item: Card;
-  setItems: React.Dispatch<React.SetStateAction<Card[]>>;
-}) => {
-  return (
-    <Link
-      to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
-      state={{ item }}
-      className="block relative rounded-2xl"
-    >
-      {/* 이미지 */}
-      <div className="relative w-full h-[150px] rounded-2xl overflow-hidden bg-[#f4f5f7]">
-        {item.img ? (
-          <img
-            src={item.img}
-            alt={item.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full bg-[#e9ecf1]" />
-        )}
-
-        {/* 이미지 우측하단 하트 버튼 (링크 밖, 오버레이) */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            setItems((prev) =>
-              prev.map((x) =>
-                x.id === item.id
-                  ? {
-                      ...x,
-                      liked: !x.liked,
-                      likeCount: x.likeCount + (x.liked ? -1 : 1),
-                    }
-                  : x,
-              ),
-            );
-          }}
-          aria-label={item.liked ? '좋아요 취소' : '좋아요'}
-          className="absolute bottom-2 right-2 z-10 bg-transparent p-0 select-none active:scale-100"
-        >
-          <span className="block w-[1.25rem] h-[1.25rem]">
-            <img
-              src={item.liked ? HeartFilledIcon : HeartIcon}
-              alt=""
-              className="w-full h-full"
-              draggable={false}
-            />
-          </span>
-        </button>
-      </div>
-      {/* 텍스트 */}
-      <div className="mt-3">
-        <p className="truncate text-[#383D48] font-kakaoSmall text-[16px] leading-6 tracking-[-0.02rem]">
-          {item.title.length > 13 ? item.title.slice(0, 13) + '…' : item.title}
-        </p>
-        <div className="flex items-center gap-1">
-          <img src={ArrowLocation} className="w-4 h-4" alt="" />
-          <p className="truncate text-[#596072] font-kakaoSmall text-[14px] leading-[1.26rem] tracking-[-0.0175rem]">
-            {item.location || '주소 정보 없음'}
-          </p>
-        </div>
-
-        {/* 좋아요 수 */}
-        <div className="flex items-center gap-1 mt-1">
-          <img src={LikeLocation} className="w-4 h-4" alt="" />
-          <p className="text-[#596072] font-kakaoSmall text-[14px]">
-            {item.likeCount.toLocaleString()}
-          </p>
-        </div>
-      </div>
-    </Link>
-  );
-};
 
 export default function HotRestaurantsPage() {
   const [activeRegion, setActiveRegion] = useState<number | undefined>(
@@ -170,6 +75,22 @@ export default function HotRestaurantsPage() {
             deduped.push(m);
           }
         }
+        // deduped 만든 뒤에 추가
+        const ids = deduped.map((d) => d.id);
+        try {
+          const [countsMap, myLikedSet] = await Promise.all([
+            fetchLikeCounts(ids), // { [id]: number }
+            fetchMyLiked(ids), // Set<string>
+          ]);
+
+          deduped.forEach((card) => {
+            card.likeCount = countsMap[card.id] ?? 0;
+            card.liked = myLikedSet.has(card.id);
+          });
+        } catch (e) {
+          // 집계 실패해도 목록은 보여주자 (조용히 스킵)
+          console.warn('like info merge failed:', e);
+        }
 
         setItems((prev) => {
           const merged = nextPage === 1 ? deduped : [...prev, ...deduped];
@@ -191,6 +112,7 @@ export default function HotRestaurantsPage() {
     },
     [activeRegion],
   );
+
   useEffect(() => {
     // 초기화
     setItems([]);
