@@ -124,9 +124,9 @@ export default function RecommendPage() {
   const counter = useMemo(() => `${input.trim().length} / ${MAX_LEN}`, [input]);
 
   return (
-    <div className="mx-auto max-w-[375px] h-full flex flex-col">
+    <div className="w-full flex flex-col min-h-screen sm:min-h-[calc(100vh-80px)]">
       {!hasChat ? (
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-8">
           <div className="mt-16 flex flex-col items-center text-center">
             <img src={bappul} alt="AI 밥풀이" className="h-28 w-28 mb-8" />
             <h2 className="font-kakaoBig text-[16px] text-[#383D48]">

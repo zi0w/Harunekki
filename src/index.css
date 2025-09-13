@@ -72,14 +72,53 @@ a:hover {
 body {
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center; /* 가로 중앙 */
-  align-items: center; /* 세로 중앙 */
-  min-width: 100vw;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   background-color: #e7e7e7;
-  overflow-x: hidden;
+  overflow: hidden; /* 전체 스크롤 방지 */
   @apply scrollbar-hide;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 모바일에서는 전체 너비 사용 */
+@media (max-width: 640px) {
+  #root {
+    padding: 0;
+  }
+}
+
+/* 데스크톱에서는 중앙 정렬 */
+@media (min-width: 641px) {
+  #root {
+    padding: 20px;
+  }
+}
+
+/* 모바일 안전영역 대응 */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS Safari에서 viewport-fit=cover 지원 */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
 }
 
 h1 {

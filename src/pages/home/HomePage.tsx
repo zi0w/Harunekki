@@ -88,9 +88,9 @@ const RestaurantCard = ({ item }: { item: Food }) => (
     to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
     state={{ item }}
     aria-label={item.title}
-    className="flex w-40 flex-col items-start gap-3 rounded-2xl"
+    className="block relative rounded-2xl"
   >
-    <div className="w-full h-[150px] rounded-2xl overflow-hidden bg-[#f4f5f7]">
+    <div className="w-full aspect-square rounded-2xl overflow-hidden bg-[#f4f5f7]">
       {item.img ? (
         <img
           src={item.img}
@@ -103,19 +103,19 @@ const RestaurantCard = ({ item }: { item: Food }) => (
       )}
     </div>
 
-    <div className="flex flex-col gap-1 w-full mb-6">
-      <p className="truncate text-[#383D48] font-kakaoSmall text-[16px] leading-6 tracking-[-0.02rem]">
+    <div className="mt-3">
+      <p className="font-kakaoSmall text-[16px] text-[#383D48] truncate mb-1">
         {item.title.length > 13 ? item.title.slice(0, 13) + '…' : item.title}
       </p>
       <div className="flex items-center gap-1">
         <img src={ArrowLocation} className="w-4 h-4" alt="" />
-        <p className="truncate text-[#596072] font-kakaoSmall text-[0.875rem] font-normal leading-[1.26rem] tracking-[-0.0175rem]">
+        <p className="truncate text-[#596072] font-kakaoSmall text-[14px]">
           {item.location}
         </p>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 mt-1">
         <img src={LikeLocation} className="w-4 h-4" alt="" />
-        <p className="truncate text-[#596072] font-kakaoSmall text-[0.875rem] font-normal leading-[1.26rem] tracking-[-0.0175rem]">
+        <p className="text-[#596072] font-kakaoSmall text-[14px]">
           {item.views.toLocaleString()}
         </p>
       </div>
@@ -209,93 +209,90 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden scrollbar-hide bg-[#e7e7e7] mt-5">
-      <div className="mx-auto w-full max-w-[20.9375rem] bg-[#F9FAFB]">
-        {/* 배너 */}
-        <Link to="/recommend" className="flex-1">
-          <img src={BannerImg} alt="배너" />
-        </Link>
+    <div className="w-full">
+      {/* 배너 */}
+      <Link to="/recommend" className="flex-1 block mt-5">
+        <div className="relative overflow-hidden rounded-lg drop-shadow-sm">
+          <img src={BannerImg} alt="배너" className="w-full h-auto" />
+        </div>
+      </Link>
 
-        {/* 이달의 제철 음식 */}
-        <section className="mt-6">
-          <div className="flex w-full flex-col items-start gap-y-6">
-            <SectionHeader title="이달의 제철 음식" to="/foods/seasonal" />
+      {/* 이달의 제철 음식 */}
+      <section className="mt-6">
+        <div className="flex w-full flex-col items-start gap-y-6">
+          <SectionHeader title="이달의 제철 음식" to="/foods/seasonal" />
 
-            {sfError && (
-              <div className="w-full rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {sfError}
-              </div>
-            )}
+          {sfError && (
+            <div className="w-full rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {sfError}
+            </div>
+          )}
 
-            <div className="w-full overflow-x-auto whitespace-nowrap scrollbar-hide">
-              {sfLoading && seasonalFoods.length === 0 ? (
-                <div className="flex gap-4">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="inline-flex flex-col w-[104px] mr-4"
-                    >
-                      <div className="w-[6.25rem] h-[6.25rem] rounded-xl bg-[#eee] animate-pulse" />
-                      <div className="mt-3 h-4 w-20 bg-[#eee] rounded animate-pulse" />
-                      <div className="mt-2 h-3 w-12 bg-[#eee] rounded animate-pulse" />
-                    </div>
-                  ))}
-                </div>
-              ) : seasonalFoods.length > 0 ? (
-                seasonalFoods.map((f) => <ChipRowCard key={f.id} item={f} />)
-              ) : (
-                !sfLoading &&
-                !sfError && (
-                  <div className="text-sm text-[#8A8A8A]">
-                    표시할 결과가 없습니다.
+          <div className="w-full overflow-x-auto whitespace-nowrap scrollbar-hide">
+            {sfLoading && seasonalFoods.length === 0 ? (
+              <div className="flex gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="inline-flex flex-col w-[104px] mr-4">
+                    <div className="w-[6.25rem] h-[6.25rem] rounded-xl bg-[#eee] animate-pulse" />
+                    <div className="mt-3 h-4 w-20 bg-[#eee] rounded animate-pulse" />
+                    <div className="mt-2 h-3 w-12 bg-[#eee] rounded animate-pulse" />
                   </div>
-                )
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* 지금 가장 인기있는 식당 (API 연동) */}
-        <section className="mt-8">
-          <div className="flex w-full flex-col items-start gap-6">
-            <SectionHeader
-              title="지금 가장 인기있는 식당"
-              to="/restaurants/hot"
-            />
-
-            {hotError && (
-              <div className="w-full rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {hotError}
+                ))}
               </div>
+            ) : seasonalFoods.length > 0 ? (
+              seasonalFoods.map((f) => <ChipRowCard key={f.id} item={f} />)
+            ) : (
+              !sfLoading &&
+              !sfError && (
+                <div className="text-sm text-[#8A8A8A]">
+                  표시할 결과가 없습니다.
+                </div>
+              )
             )}
-
-            <div className="grid grid-cols-2 gap-4 w-full">
-              {hotLoading && hotRestaurants.length === 0
-                ? Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="w-full h-[150px] bg-[#eee] rounded-2xl" />
-                      <div className="mt-3 space-y-2">
-                        <div className="h-4 w-3/4 bg-[#eee] rounded" />
-                        <div className="h-3 w-1/2 bg-[#eee] rounded" />
-                      </div>
-                    </div>
-                  ))
-                : hotRestaurants.length > 0
-                  ? hotRestaurants.map((r) => (
-                      <RestaurantCard key={r.id} item={r} />
-                    ))
-                  : !hotLoading &&
-                    !hotError && (
-                      <div className="text-sm text-[#8A8A8A] col-span-2">
-                        표시할 결과가 없습니다.
-                      </div>
-                    )}
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <div className="h-20" />
-      </div>
+      {/* 지금 가장 인기있는 식당 (API 연동) */}
+      <section className="mt-8">
+        <div className="flex w-full flex-col items-start gap-6">
+          <SectionHeader
+            title="지금 가장 인기있는 식당"
+            to="/restaurants/hot"
+          />
+
+          {hotError && (
+            <div className="w-full rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {hotError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 w-full">
+            {hotLoading && hotRestaurants.length === 0
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="w-full aspect-square bg-[#eee] rounded-2xl" />
+                    <div className="mt-3 space-y-2">
+                      <div className="h-4 w-3/4 bg-[#eee] rounded" />
+                      <div className="h-3 w-1/2 bg-[#eee] rounded" />
+                    </div>
+                  </div>
+                ))
+              : hotRestaurants.length > 0
+                ? hotRestaurants.map((r) => (
+                    <RestaurantCard key={r.id} item={r} />
+                  ))
+                : !hotLoading &&
+                  !hotError && (
+                    <div className="text-sm text-[#8A8A8A] col-span-2">
+                      표시할 결과가 없습니다.
+                    </div>
+                  )}
+          </div>
+        </div>
+      </section>
+
+      <div className="h-20" />
     </div>
   );
 };
