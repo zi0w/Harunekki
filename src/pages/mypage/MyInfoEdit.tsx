@@ -12,6 +12,7 @@ export default function MyInfoEdit() {
   const [age, setAge] = useState<string>(''); // ← 문자열로 관리
   const [gender, setGender] = useState<Gender>('');
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // StrictMode 이펙트 2회 방지
   const loadedRef = useRef(false);
@@ -21,10 +22,8 @@ export default function MyInfoEdit() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        nav('/login', { replace: true });
-        return;
-      }
+      if (!user) return;
+
       setUserId(user.id);
 
       if (loadedRef.current) return;
@@ -41,8 +40,9 @@ export default function MyInfoEdit() {
         setGender((data.gender as Gender) ?? '');
       }
       loadedRef.current = true;
+      setLoading(false);
     })();
-  }, [nav]);
+  }, []);
 
   const submit = async () => {
     if (!userId) return;
@@ -71,8 +71,38 @@ export default function MyInfoEdit() {
     nav('/mypage/info', { replace: true });
   };
 
+  if (loading) {
+    return (
+      <div className="w-full flex flex-col mt-10 gap-8">
+        {/* 이름 스켈레톤 */}
+        <div>
+          <div className="h-4 w-12 bg-gray-200 rounded animate-pulse mb-3"></div>
+          <div className="h-10 w-full bg-gray-200 rounded-lg animate-pulse"></div>
+        </div>
+
+        {/* 나이 스켈레톤 */}
+        <div>
+          <div className="h-4 w-8 bg-gray-200 rounded animate-pulse mb-3"></div>
+          <div className="h-10 w-full bg-gray-200 rounded-lg animate-pulse"></div>
+        </div>
+
+        {/* 성별 스켈레톤 */}
+        <div>
+          <div className="h-4 w-8 bg-gray-200 rounded animate-pulse mb-3"></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* 버튼 스켈레톤 */}
+        <div className="h-12 w-full bg-gray-200 rounded-lg animate-pulse mt-8"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col mx-auto max-w-[375px] mt-10 gap-8">
+    <div className="w-full flex flex-col mt-10 gap-8">
       {/* 이름 */}
       <div>
         <span className="text-base text-[#383D48] font-kakaoSmall font-bold">
@@ -144,7 +174,7 @@ export default function MyInfoEdit() {
         type="button"
         onClick={submit}
         disabled={saving}
-        className="w-full rounded-lg bg-[#EF6F6F] shadow-sm text-white font-kakaoBig py-3 disabled:opacity-60 mt-[200px]"
+        className="w-full rounded-lg bg-[#EF6F6F] shadow-sm text-white font-kakaoBig py-3 disabled:opacity-60 mt-8 hover:bg-[#E55A5A] hover:text-white transition-colors duration-200 disabled:hover:bg-[#EF6F6F] disabled:hover:text-white"
       >
         {saving ? '저장 중…' : '수정 완료하기'}
       </button>

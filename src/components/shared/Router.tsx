@@ -1,4 +1,5 @@
 import Layout from '@/components/shared/Layout';
+import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import AuthCallback from '@/pages/auth/AuthCallback';
 import LoginPage from '@/pages/auth/LoginPage';
 import OnboardingPage from '@/pages/auth/OnboardingPage';
@@ -21,7 +22,15 @@ const Router = () => {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<HomePage />} />
+          {/* 공개 페이지 (로그인 불필요) */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/foods/seasonal" element={<SeasonalFoodsPage />} />
           <Route
             path="/foods/seasonal/detail"
@@ -29,16 +38,62 @@ const Router = () => {
           />
           <Route path="/restaurants/hot" element={<HotRestaurantsPage />} />
           <Route path="/recommend" element={<RecommendPage />} />
+          <Route path="search" element={<SearchPage />} />
+
+          {/* 인증 관련 페이지 */}
           <Route path="login" element={<LoginPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="onboarding" element={<OnboardingPage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="likes" element={<LikesPage />} />
-          <Route path="diary" element={<DiaryPage />} />
-          <Route path="mypage" element={<MyPage />} />
-          <Route path="mypage/info" element={<MyInfo />} />
-          <Route path="mypage/info/edit" element={<MyInfoEdit />} />
-          <Route path="mypage/badges" element={<MyBadges />} />
+
+          {/* 보호된 페이지 (로그인 필요) */}
+          <Route
+            path="likes"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <LikesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="diary"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <DiaryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="mypage"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <MyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="mypage/info"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <MyInfo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="mypage/info/edit"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <MyInfoEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="mypage/badges"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <MyBadges />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

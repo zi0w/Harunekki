@@ -27,12 +27,7 @@ const items = [
 export default function BottomNav() {
   return (
     <nav
-      className="
-        h-[68px] w-full
-        bg-[#FDFDFE] backdrop-blur border-t
-        mb-[34px] 
-        px-5 z-40
-      "
+      className="h-[68px] w-full bg-[#FDFDFE] backdrop-blur border-t px-5 safe-area-bottom"
       aria-label="하단 네비게이션"
     >
       <ul className="grid grid-cols-5 h-full">
@@ -46,8 +41,8 @@ export default function BottomNav() {
               {({ isActive }) => (
                 <img
                   src={isActive ? iconActive : icon}
-                  width={48}
-                  height={48}
+                  width={56}
+                  height={56}
                   draggable={false}
                   className="pointer-events-none select-none"
                 />

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/icons/header/header_icon.svg';
-import arrowRight from '@/assets/icons/mypage/arrow_right.png';
 import type { ReactNode } from 'react';
 
 type HeaderBarProps = {
@@ -46,40 +45,29 @@ export default function HeaderBar({
 
   return (
     <header
-      className={`${heightClassName} shrink-0 ${bgClassName} ${withBorder ? 'border-b' : ''} ${className}`}
+      className={`${heightClassName} shrink-0 ${bgClassName} ${withBorder ? 'border-b' : ''} ${className} safe-area-top`}
     >
-      {/* 아래쪽 baseline에 맞추고 싶어 items-end */}
-      <div className="flex h-full items-end px-5">
+      {/* 좌측 정렬로 수정 */}
+      <div className="flex h-full items-center px-5">
         {/* 좌측: 로고 또는 백버튼 */}
         {variant === 'logo' ? (
-          <div className="flex items-center gap-2 pb-2">
+          <div className="flex items-center">
             <img
               src={logo}
               alt="로고"
-              className="h-6 w-auto"
+              className="h-4 w-auto"
               draggable={false}
             />
           </div>
         ) : (
-          <div className="flex items-center gap-2 pb-2">
-            {/* <button
+          <div className="flex items-center gap-2">
+            <button
               onClick={handleBack}
               aria-label="뒤로가기"
-              className="grid h-10 w-10 place-items-center rounded-full hover:bg-black/5"
+              className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-black/5"
             >
-              <img
-                src={arrowRight}
-                alt="뒤로"
-                className="h-4 w-4 rotate-180"
-                draggable={false}
-              />
-            </button> */}
-            <img
-              src={arrowRight}
-              onClick={handleBack}
-              className="h-5 w-5 rotate-180 grid place-items-center cursor-pointer"
-              draggable={false}
-            />
+              <span className="text-[#9096A5] text-lg font-bold">&lt;</span>
+            </button>
             {title && (
               <h1 className="font-kakaoBig text-[16px] text-[#383D48]">
                 {title}
@@ -89,7 +77,9 @@ export default function HeaderBar({
         )}
 
         {/* 우측 액션 */}
-        <div className="ml-auto pb-2">{rightSlot}</div>
+        {rightSlot && (
+          <div className="flex items-center ml-auto">{rightSlot}</div>
+        )}
       </div>
     </header>
   );
