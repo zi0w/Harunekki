@@ -4,6 +4,8 @@ import AuthCallback from '@/pages/auth/AuthCallback';
 import LoginPage from '@/pages/auth/LoginPage';
 import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
+import DiaryDetailPage from '@/pages/diary/DiaryDetailPage';
+import DiaryRecordPage from '@/pages/diary/DiaryRecordPage';
 import SeasonalFoodDetailPage from '@/pages/foods/SeasonalFoodDetailPage';
 import SeasonalFoodsPage from '@/pages/foods/SeasonalFoodsPage';
 import HomePage from '@/pages/home/HomePage';
@@ -59,6 +61,22 @@ const Router = () => {
             element={
               <ProtectedRoute requireAuth={true}>
                 <DiaryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="diary/:id"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <DiaryDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="diary/:diaryId/place/:placeId"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <DiaryRecordPage />
               </ProtectedRoute>
             }
           />

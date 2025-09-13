@@ -46,10 +46,7 @@ export default function ProtectedRoute({
   if (loading || (requireAuth && !isAuthenticated)) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F] mx-auto mb-4"></div>
-          <p className="text-[#596072]">로딩 중...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F]"></div>
       </div>
     );
   }
