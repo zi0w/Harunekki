@@ -1,6 +1,11 @@
 /* ABeeZee (Google Fonts) */
 @import url('https://fonts.googleapis.com/css2?family=ABeeZee&display=swap');
 
+/* Swiper CSS */
+@import 'swiper/css';
+@import 'swiper/css/pagination';
+@import 'swiper/css/navigation';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

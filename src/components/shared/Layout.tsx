@@ -39,6 +39,9 @@ const Layout = () => {
   const isRecommend = pathname.startsWith('/recommend');
   const isRecommendChat = pathname.startsWith('/recommend/chat');
 
+  // 이벤트 페이지
+  const isEvent = pathname.startsWith('/event');
+
   // 다이어리 페이지
   const isDiaryDetail =
     pathname.startsWith('/diary/') && pathname.split('/').length === 3;
@@ -81,7 +84,8 @@ const Layout = () => {
     isRecommend ||
     isRecommendChat ||
     isDiaryDetail ||
-    isDiaryRecord;
+    isDiaryRecord ||
+    isEvent;
 
   return (
     <div className="w-full sm:max-w-[375px] h-full bg-[#F9FAFB] flex flex-col relative">
@@ -101,6 +105,15 @@ const Layout = () => {
               backTo={
                 isInfo ? (isInfoEdit ? '/mypage/info' : '/mypage') : '/mypage'
               }
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
+            />
+          ) : isEvent ? (
+            <HeaderBar
+              variant="back"
+              title="이벤트"
+              backTo="/"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}
@@ -183,9 +196,9 @@ const Layout = () => {
       <main
         className={`flex-1 overflow-y-auto scrollbar-hide ${
           !isAuth ? 'pt-[40px]' : ''
-        } pb-[68px]`}
+        } ${isEvent ? '' : 'pb-[68px]'}`}
       >
-        <div className="px-5">
+        <div className={isEvent ? '' : 'px-5'}>
           <Outlet />
         </div>
       </main>

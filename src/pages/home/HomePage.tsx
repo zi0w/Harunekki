@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ArrowRight from '@/assets/icons/home/arrow_right.svg';
-import BannerImg from '@/assets/icons/home/Banner.png';
 import ArrowLocation from '@/assets/icons/home/location.svg';
 import LikeLocation from '@/assets/icons/home/heart.svg';
+import BannerCarousel from '@/components/shared/BannerCarousel';
 
 import { fetchAreaBasedList, type ListItem } from '@/lib/api/tourapi';
 
@@ -210,12 +210,8 @@ const HomePage = () => {
 
   return (
     <div className="w-full">
-      {/* 배너 */}
-      <Link to="/recommend" className="flex-1 block mt-5">
-        <div className="relative overflow-hidden rounded-lg drop-shadow-sm">
-          <img src={BannerImg} alt="배너" className="w-full h-auto" />
-        </div>
-      </Link>
+      {/* 배너 캐러셀 */}
+      <BannerCarousel />
 
       {/* 이달의 제철 음식 */}
       <section className="mt-6">
