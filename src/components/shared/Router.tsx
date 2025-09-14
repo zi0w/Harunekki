@@ -6,6 +6,7 @@ import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
 import DiaryDetailPage from '@/pages/diary/DiaryDetailPage';
 import DiaryRecordPage from '@/pages/diary/DiaryRecordPage';
+import EventPage from '@/pages/event/EventPage';
 import SeasonalFoodDetailPage from '@/pages/foods/SeasonalFoodDetailPage';
 import SeasonalFoodsPage from '@/pages/foods/SeasonalFoodsPage';
 import HomePage from '@/pages/home/HomePage';
@@ -53,6 +54,7 @@ const Router = () => {
           />
           <Route path="/restaurants/hot" element={<HotRestaurantsPage />} />
           <Route path="/recommend" element={<RecommendPage />} />
+          <Route path="/event" element={<EventPage />} />
           <Route path="search" element={<SearchPage />} />
 
           {/* 인증 관련 페이지 */}

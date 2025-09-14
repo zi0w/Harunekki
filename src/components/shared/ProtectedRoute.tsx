@@ -45,7 +45,10 @@ export default function ProtectedRoute({
   // 로딩 중이거나 로그인이 필요한 페이지인데 인증되지 않았으면 로딩 표시
   if (loading || (requireAuth && !isAuthenticated)) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div
+        className="w-full flex items-center justify-center"
+        style={{ height: 'calc(100vh - 120px)' }}
+      >
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F]"></div>
       </div>
     );
