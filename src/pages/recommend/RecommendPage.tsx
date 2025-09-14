@@ -12,22 +12,33 @@ type Msg = {
 const MAX_LEN = 100;
 const MAX_RETRY = 3;
 
+// 추천 응답에서 음식명을 추출하는 함수
+const extractFoodName = (response: string): string | null => {
+  // "○○는 어떠세요?" 패턴에서 음식명 추출
+  const match = response.match(/^(.+?)는 어떠세요\?/);
+  if (match) {
+    return match[1].trim();
+  }
+  return null;
+};
+
 export default function RecommendPage() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [lastQuery, setLastQuery] = useState<string>('');
+  const [previousRecommendations, setPreviousRecommendations] = useState<
+    string[]
+  >([]);
+  const [conversationHistory, setConversationHistory] = useState<
+    Array<{ role: string; content: string }>
+  >([]);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const hasChat = messages.length > 0;
   const canSubmit =
     input.trim().length > 0 && input.trim().length <= MAX_LEN && !loading;
-
-  useEffect(() => {
-    if (!listRef.current) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [messages, loading]);
 
   const pushAssistantPending = () => {
     setMessages((prev) => [
@@ -72,9 +83,26 @@ export default function RecommendPage() {
     pushAssistantPending();
 
     try {
-      const answer = await askRecommend(q);
+      const answer = await askRecommend(
+        q,
+        previousRecommendations,
+        conversationHistory,
+      );
       replaceLastPending(answer);
       setRetryCount(0);
+
+      // 대화 히스토리에 추가
+      setConversationHistory((prev) => [
+        ...prev,
+        { role: 'user', content: q },
+        { role: 'assistant', content: answer },
+      ]);
+
+      // 추천된 음식명을 추출하여 이전 추천 목록에 추가
+      const foodName = extractFoodName(answer);
+      if (foodName) {
+        setPreviousRecommendations((prev) => [...prev, foodName]);
+      }
     } catch (e) {
       console.error(e);
       replaceLastPending(
@@ -104,8 +132,25 @@ export default function RecommendPage() {
     pushAssistantPending();
 
     try {
-      const answer = await askRecommend(q);
+      const answer = await askRecommend(
+        q,
+        previousRecommendations,
+        conversationHistory,
+      );
       replaceLastPending(answer);
+
+      // 대화 히스토리에 추가
+      setConversationHistory((prev) => [
+        ...prev,
+        { role: 'user', content: '다시 추천해줘' },
+        { role: 'assistant', content: answer },
+      ]);
+
+      // 추천된 음식명을 추출하여 이전 추천 목록에 추가
+      const foodName = extractFoodName(answer);
+      if (foodName) {
+        setPreviousRecommendations((prev) => [...prev, foodName]);
+      }
     } catch (e) {
       console.error(e);
       replaceLastPending('재추천 중 오류가 발생했어요.');
@@ -118,7 +163,9 @@ export default function RecommendPage() {
     setInput('');
     setMessages([]);
     setRetryCount(0);
-    setLastQuery(''); // ✅ 초기화
+    setLastQuery('');
+    setPreviousRecommendations([]); // 이전 추천 목록도 초기화
+    setConversationHistory([]); // 대화 히스토리도 초기화
   };
 
   const counter = useMemo(() => `${input.trim().length} / ${MAX_LEN}`, [input]);
