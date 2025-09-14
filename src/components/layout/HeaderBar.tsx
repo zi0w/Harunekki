@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/icons/header/header_icon.svg';
+// import BackIcon from '@/assets/icons/header/arrow_left.svg';
 import type { ReactNode } from 'react';
 
 type HeaderBarProps = {
@@ -64,9 +65,11 @@ export default function HeaderBar({
             <button
               onClick={handleBack}
               aria-label="뒤로가기"
-              className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-black/5"
+              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5"
             >
               <span className="text-[#9096A5] text-lg font-bold">&lt;</span>
+
+              {/* <img src={BackIcon} alt="뒤로가기" className="w-5 h-5 " /> */}
             </button>
             {title && (
               <h1 className="font-kakaoBig text-[16px] text-[#383D48]">

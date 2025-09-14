@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { fetchAreaBasedList } from '@/lib/api/tourapi';
 import CardItem, { type Card } from '@/components/layout/CardItem';
 import { fetchLikeCounts, fetchMyLiked } from '@/lib/supabase/likes';
+import { searchKakaoPlaces } from '@/lib/kakao/searchKakaoPlaces';
 
 const REGIONS: Array<{ label: string; code?: number }> = [
   { label: '전체', code: undefined },
@@ -92,11 +93,25 @@ export default function HotRestaurantsPage() {
           console.warn('like info merge failed:', e);
         }
 
+        // kakao 검색 결과 title 기준으로 우선순위 매기기
+        const placePriority = new Map<string, number>();
+        const kakaoPlaces = await searchKakaoPlaces('음식점');
+        kakaoPlaces.forEach((place: { place_name: string }, idx: number) => {
+          placePriority.set(place.place_name, idx);
+        });
+
+        const sorted = deduped.sort((a: Card, b: Card) => {
+          const aPriority = placePriority.get(a.title) ?? 999;
+          const bPriority = placePriority.get(b.title) ?? 999;
+          return aPriority - bPriority;
+        });
+
         setItems((prev) => {
-          const merged = nextPage === 1 ? deduped : [...prev, ...deduped];
+          const merged = nextPage === 1 ? sorted : [...prev, ...sorted];
           setHasMore((total || 0) > merged.length);
           return merged;
         });
+
         pageRef.current = nextPage;
       } catch (e: unknown) {
         const isAbort = e instanceof DOMException && e.name === 'AbortError';

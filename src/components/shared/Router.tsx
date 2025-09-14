@@ -9,7 +9,6 @@ import DiaryRecordPage from '@/pages/diary/DiaryRecordPage';
 import SeasonalFoodDetailPage from '@/pages/foods/SeasonalFoodDetailPage';
 import SeasonalFoodsPage from '@/pages/foods/SeasonalFoodsPage';
 import HomePage from '@/pages/home/HomePage';
-import LikesPage from '@/pages/likes/LikesPage';
 import MyBadges from '@/pages/mypage/MyBadges';
 import MyInfo from '@/pages/mypage/MyInfo';
 import MyInfoEdit from '@/pages/mypage/MyInfoEdit';
@@ -18,8 +17,22 @@ import RecommendPage from '@/pages/recommend/RecommendPage';
 import HotRestaurantsPage from '@/pages/restaurants/HotRestaurantsPage';
 import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import LikedFilterPage from '@/pages/likes/LikedFilterPage';
+import { useState } from 'react';
+import LikedPage from '@/pages/likes/LikesPage';
 
 const Router = () => {
+  const [searchKeyword] = useState('');
+  const [filter, setFilter] = useState<{
+    categories: string[];
+    seasonalOnly: boolean;
+    localOnly: boolean;
+  }>({
+    categories: [],
+    seasonalOnly: false,
+    localOnly: false,
+  });
+
   return (
     <BrowserRouter>
       <Routes>
@@ -52,10 +65,40 @@ const Router = () => {
             path="likes"
             element={
               <ProtectedRoute requireAuth={true}>
-                <LikesPage />
+                <LikedPage
+                  filterOptions={filter}
+                  searchKeyword={searchKeyword}
+                />
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/likes/filter"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <LikedFilterPage
+                  filter={filter}
+                  setFilter={setFilter}
+                  onClose={() => window.history.back()}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/search/filter"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <LikedFilterPage
+                  filter={filter}
+                  setFilter={setFilter}
+                  onClose={() => window.history.back()}
+                />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="diary"
             element={

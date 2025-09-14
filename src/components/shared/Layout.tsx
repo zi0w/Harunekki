@@ -4,13 +4,28 @@ import HeaderBar from '@/components/layout/HeaderBar';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import CartIcon from '@/assets/icons/header/suitcase.svg';
+import SearchFilterHeader from '../layout/SearchFilterHeader';
+
 const Layout = () => {
   const { pathname } = useLocation();
   const [diaryTitle, setDiaryTitle] = useState<string>('다이어리');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
+  // 홈
   const isHome = pathname === '/';
+
+  //제철음식 페이지
   const isSeasonalFoods = pathname.startsWith('/foods/seasonal');
+
+  //인기 식당 페이지
   const isHotRestaurants = pathname.startsWith('/restaurants/hot');
+  //검색 페이지
+  const isSearch = pathname.startsWith('/search');
+  // const isSearchFilter = pathname.startsWith('/search/filter');
+
+  //좋아요한 페이지
+  const isLiked = pathname.startsWith('/likes');
+  // const isLikedFilter = pathname.startsWith('/likes/filter');
 
   const isAuth = pathname === '/login' || pathname.startsWith('/auth');
   const isOnboarding = pathname === '/onboarding';
@@ -140,14 +155,23 @@ const Layout = () => {
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}
             />
-          ) : isDiaryRecord ? (
-            <HeaderBar
-              variant="back"
-              title="다이어리 기록"
-              backTo={`/diary/${pathname.split('/')[2]}`}
-              heightClassName="h-[40px]"
-              bgClassName="bg-[#F9FAFB]"
-              withBorder={true}
+          ) : isLiked ? (
+            <SearchFilterHeader
+              searchKeyword={searchKeyword}
+              setSearchKeyword={setSearchKeyword}
+              onSearch={(keyword) => {
+                setSearchKeyword(keyword);
+              }}
+              backTo="/"
+            />
+          ) : isSearch ? (
+            <SearchFilterHeader
+              searchKeyword={searchKeyword}
+              setSearchKeyword={setSearchKeyword}
+              onSearch={(keyword) => {
+                setSearchKeyword(keyword);
+              }}
+              backTo="/"
             />
           ) : (
             <Header />
