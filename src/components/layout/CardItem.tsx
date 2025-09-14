@@ -1,11 +1,12 @@
 // src/components/restaurants/CardItem.tsx
 import { Link, useNavigate } from 'react-router-dom';
-import ArrowLocation from '@/assets/icons/home/location.svg';
-import LikeLocation from '@/assets/icons/home/heart.svg';
 import HeartIcon from '@/assets/icons/like/heart.svg';
 import HeartFilledIcon from '@/assets/icons/like/heartClicked.svg';
-import { toggleLike } from '@/lib/supabase/likes';
+import ArrowLocation from '@/assets/icons/home/location.svg';
+import LikeLocation from '@/assets/icons/home/heart.svg';
+import { ensureUserExists, toggleLike } from '@/lib/supabase/likes';
 import { supabase } from '@/lib/supabase/supabase';
+import { useLocation } from 'react-router-dom';
 
 export type Card = {
   id: string;
@@ -15,16 +16,20 @@ export type Card = {
   views: number;
   liked: boolean;
   likeCount: number;
+  category?: string;
+  isSeasonal?: boolean;
+  isLocalSpecial?: boolean;
 };
 
 export default function CardItem({
   item,
   setItems,
 }: {
-  item: Card;
+  item: Card & { type?: 'food' | 'poi' };
   setItems: React.Dispatch<React.SetStateAction<Card[]>>;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <Link
@@ -45,14 +50,13 @@ export default function CardItem({
           <div className="w-full h-full bg-[#e9ecf1]" />
         )}
 
-        {/* 이미지 우측하단 하트 버튼 */}
+        {/* 좋아요 버튼 */}
         <button
           type="button"
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            // 로그인 체크
             const {
               data: { user },
             } = await supabase.auth.getUser();
@@ -63,18 +67,36 @@ export default function CardItem({
               return;
             }
 
-            // 1) 낙관적 업데이트
-            setItems((prev) =>
-              prev.map((x) =>
-                x.id === item.id
-                  ? {
-                      ...x,
-                      liked: !x.liked,
-                      likeCount: Math.max(0, x.likeCount + (x.liked ? -1 : 1)),
-                    }
-                  : x,
-              ),
-            );
+            try {
+              await ensureUserExists();
+            } catch (e) {
+              alert(e instanceof Error ? e.message : '유저 확인 중 오류');
+              return;
+            }
+
+            // 1) 낙관적 UI 업데이트
+
+            setItems((prev) => {
+              const isOnLikedPage = location.pathname.includes('/liked');
+              if (isOnLikedPage && item.liked) {
+                // 좋아요 해제 시 목록에서 제거
+                return prev.filter((x) => x.id !== item.id);
+              } else {
+                // 일반 목록에서는 liked만 토글
+                return prev.map((x) =>
+                  x.id === item.id
+                    ? {
+                        ...x,
+                        liked: !x.liked,
+                        likeCount: Math.max(
+                          0,
+                          x.likeCount + (x.liked ? -1 : 1),
+                        ),
+                      }
+                    : x,
+                );
+              }
+            });
 
             try {
               // 2) 서버 토글
@@ -87,7 +109,7 @@ export default function CardItem({
                 ),
               );
             } catch (err) {
-              // 실패 시 롤백
+              // 실패 시 UI 롤백
               setItems((prev) =>
                 prev.map((x) =>
                   x.id === item.id
@@ -102,6 +124,7 @@ export default function CardItem({
                     : x,
                 ),
               );
+
               alert(
                 err instanceof Error
                   ? err.message

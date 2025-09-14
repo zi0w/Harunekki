@@ -1,7 +1,31 @@
 import axios, { AxiosError } from 'axios';
+import { supabase } from '../supabase/supabase';
 
 const SERVICE_KEY = import.meta.env.VITE_TOURAPI_KEY; // 디코딩 키 그대로 사용
 
+export async function fetchPopularRestaurants(limit = 50) {
+  const { data, error } = await supabase
+    .from('tour_pois')
+    .select('*')
+    .order('like_count', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data;
+}
+export async function searchKakaoPlaces(query: string) {
+  const url = 'https://dapi.kakao.com/v2/local/search/keyword.json';
+  const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
+
+  const res = await axios.get(url, {
+    params: { query },
+    headers: {
+      Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
+    },
+  });
+  console.log('[KAKAO API KEY]', KAKAO_REST_API_KEY);
+  return res.data.documents; // 배열
+}
 export type ListItem = {
   contentid: string;
   title: string;
@@ -51,8 +75,15 @@ function attachInterceptor(c: typeof clientV2) {
   c.interceptors.response.use(
     (res) => res,
     async (error: AxiosError) => {
-      const status = error.response?.status;
-      const data = error.response?.data as unknown;
+      if (!error.response) {
+        // 응답 자체가 없음 (ex: CORS, DNS 오류, 서버 죽음 등)
+        return Promise.reject(
+          new Error(`[HTTP ❌ NO RESPONSE] ${error.message}`),
+        );
+      }
+
+      const status = error.response.status;
+      const data = error.response.data;
       let snippet = '';
       try {
         snippet =
@@ -68,6 +99,7 @@ function attachInterceptor(c: typeof clientV2) {
     },
   );
 }
+
 attachInterceptor(clientV2);
 attachInterceptor(clientV2Detail);
 
@@ -187,8 +219,32 @@ export async function fetchAreaBasedList({
 
   const json = ensureJson<ApiListResponse>(data);
   const body = guardBody(json, endpoint.replace('/', ''));
+
+  const items = body.items?.item ?? [];
+
+  await Promise.all(
+    items.map((item) =>
+      supabase.from('tour_pois').upsert({
+        contentid: item.contentid,
+        title: item.title,
+        addr1: item.addr1,
+        firstimage: item.firstimage,
+        firstimage2: item.firstimage2,
+        areacode: item.areacode ? parseInt(item.areacode) : undefined,
+        sigungucode: item.sigungucode ? parseInt(item.sigungucode) : undefined,
+        contenttypeid: item.contenttypeid
+          ? parseInt(item.contenttypeid)
+          : undefined,
+        mapx: item.mapx ? parseFloat(item.mapx) : undefined,
+        mapy: item.mapy ? parseFloat(item.mapy) : undefined,
+        raw: item,
+        updated_at: new Date().toISOString(),
+      }),
+    ),
+  );
+
   return {
-    items: body.items?.item ?? [],
+    items,
     total: body.totalCount ?? 0,
   };
 }
