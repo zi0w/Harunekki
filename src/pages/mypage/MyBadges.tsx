@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
-import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.png';
+import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
+import { extractRegionName } from '@/utils/regionUtils';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 type Badge = {
   id: string;
@@ -56,78 +58,17 @@ export default function MyBadges() {
 
           // 모든 스탬프가 완성된 다이어리만 뱃지로 추가
           if (totalPlaces > 0 && completedPlaces === totalPlaces) {
-            // 지역명 추출 로직 (DiaryDetailPage와 동일)
-            const getRegionName = () => {
-              if (places.length === 0) return '여행지';
-
-              const placeNames = places.map(
-                (place: { place_name: string }) => place.place_name,
-              );
-
-              const regionPatterns = [
-                /제주|제주도/,
-                /서울|서울시/,
-                /부산|부산시/,
-                /대구|대구시/,
-                /인천|인천시/,
-                /광주|광주시/,
-                /대전|대전시/,
-                /울산|울산시/,
-                /경기|경기도/,
-                /강원|강원도/,
-                /충북|충청북도/,
-                /충남|충청남도/,
-                /전북|전라북도/,
-                /전남|전라남도/,
-                /경북|경상북도/,
-                /경남|경상남도/,
-                /세종|세종시/,
-              ];
-
-              for (const pattern of regionPatterns) {
-                for (const placeName of placeNames) {
-                  const match = placeName.match(pattern);
-                  if (match) {
-                    const region = match[0];
-
-                    if (
-                      [
-                        '서울',
-                        '부산',
-                        '대구',
-                        '인천',
-                        '광주',
-                        '대전',
-                        '울산',
-                        '세종',
-                      ].includes(region)
-                    ) {
-                      return region;
-                    }
-
-                    if (region.includes('도')) return region;
-                    if (region.includes('시')) return region;
-                    return region + '도';
-                  }
-                }
-              }
-
-              const firstPlace = placeNames[0];
-              if (firstPlace) {
-                const parts = firstPlace.split(' ');
-                if (parts.length > 1) {
-                  return parts[0];
-                }
-              }
-
-              return '여행지';
-            };
+            // 지역명 추출
+            const placeNames = places.map(
+              (place: { place_name: string }) => place.place_name,
+            );
+            const regionName = extractRegionName(placeNames);
 
             completedBadges.push({
               id: diary.id,
               diary_id: diary.id,
               title: diary.title,
-              region_name: getRegionName(),
+              region_name: regionName,
               completed_at: diary.end_date,
             });
           }
@@ -146,7 +87,7 @@ export default function MyBadges() {
         className="w-full flex items-center justify-center"
         style={{ height: 'calc(100vh - 120px)' }}
       >
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F]"></div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -187,7 +128,7 @@ export default function MyBadges() {
               <img
                 src={badgeCompleteIcon}
                 alt={`${badge.region_name} 뱃지`}
-                className="w-24 h-24"
+                className="w-30 h-24"
               />
             </div>
 

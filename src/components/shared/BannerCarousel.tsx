@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 
-import BannerImg1 from '@/assets/icons/home/Banner.png';
-import BannerImg2 from '@/assets/icons/home/Banner2.png';
+import BannerImg1 from '@/assets/icons/home/Banner1.webp';
+import BannerImg2 from '@/assets/icons/home/Banner2.webp';
 
 interface BannerItem {
   id: number;
