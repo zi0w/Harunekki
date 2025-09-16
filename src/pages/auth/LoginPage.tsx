@@ -38,7 +38,9 @@ const LoginPage = () => {
       <div className="flex flex-col mt-[196px] gap-2">
         {/* 이메일 로그인 버튼 */}
         <button
-          onClick={() => navigate('/auth/email-login')} className="w-[335px] h-[52px]">
+          onClick={() => navigate('/auth/email-login')}
+          className="w-[335px] h-[52px]"
+        >
           <img src={emailLoginBtn} width={335} height={52} />
           이메일로 로그인
         </button>
