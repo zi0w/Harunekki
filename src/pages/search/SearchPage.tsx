@@ -130,7 +130,7 @@ export default function SearchPage() {
     abortRef.current?.abort();
     abortRef.current = null;
     loadPage(1);
-  }, [activeRegion, loadPage]); // ✅ 지역 필터 반영용
+  }, [activeRegion, loadPage]);
 
   useEffect(() => {
     setItems([]);

@@ -5,12 +5,13 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import CartIcon from '@/assets/icons/header/suitcase.svg';
 import SearchFilterHeader from '../layout/SearchFilterHeader';
+import { useNavigate } from 'react-router-dom';
 
 const Layout = () => {
   const { pathname } = useLocation();
   const [diaryTitle, setDiaryTitle] = useState<string>('다이어리');
   const [searchKeyword, setSearchKeyword] = useState('');
-
+  const navigate = useNavigate();
   // 홈
   const isHome = pathname === '/';
 
@@ -143,6 +144,7 @@ const Layout = () => {
                   src={CartIcon}
                   alt="장바구니"
                   className="h-5 w-5 cursor-pointer"
+                  onClick={() => navigate('/carrier')}
                 />
               }
               heightClassName="h-[40px]"
@@ -207,7 +209,7 @@ const Layout = () => {
             <HeaderBar
               variant="back"
               title="여행지 다이어리"
-              backTo="/carrier"
+              backTo="/"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}

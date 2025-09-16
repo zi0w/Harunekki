@@ -10,7 +10,7 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 ================================ */
 const clientV2 = axios.create({
   baseURL: '/tourapi/B551011/KorService2',
-  timeout: 30000, // 30초
+  timeout: 10000,
   headers: { Accept: 'application/json' },
   params: {
     serviceKey: SERVICE_KEY,
@@ -23,7 +23,7 @@ const clientV2 = axios.create({
 
 const clientV2Detail = axios.create({
   baseURL: '/tourapi/B551011/KorService2',
-  timeout: 30000,
+  timeout: 10000,
   headers: { Accept: 'application/json' },
   validateStatus: (s) => s >= 200 && s < 300,
 });
@@ -196,7 +196,7 @@ export async function searchKakaoPlaces(query: string) {
 /** ✅ 인기 식당 불러오기 (캐시 기반) */
 export async function fetchPopularRestaurants(limit = 50) {
   const { data, error } = await supabase
-    .from('tour_pois')
+    .from('popular_restaurants_with_likes')
     .select('*')
     .order('like_count', { ascending: false })
     .limit(limit);

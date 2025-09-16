@@ -15,12 +15,13 @@ const pinIcons = [pinRed, pinYellow, pinGreen, pinBlue];
 declare global {
   interface Window {
     kakao: {
-      maps: typeof kakao.maps;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      maps: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [key: string]: any;
     };
   }
 }
-
 export default function MakeDiaryPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,20 +39,37 @@ export default function MakeDiaryPage() {
       mapy?: number;
     }[];
   } | null;
+  type Store = {
+    id: string;
+    title: string;
+    img?: string;
+    location?: string;
+    mapx?: number;
+    mapy?: number;
+  };
 
   // ✅ 여행 일자별 스토어를 그룹화한 상태로 관리
-  const [days, setDays] = useState<{ [key: string]: typeof state.stores }>(
-    () => {
-      if (!state) return {};
-      const result: { [key: string]: typeof state.stores } = {};
-      const totalDays = Math.ceil((state?.stores.length ?? 0) / 4);
+  const [days, setDays] = useState<{ [key: string]: Store[] }>(() => {
+    if (!state) return {};
 
-      for (let i = 0; i < totalDays; i++) {
-        result[`day-${i}`] = state.stores.slice(i * 4, (i + 1) * 4);
-      }
-      return result;
-    },
-  );
+    const [startDate, endDate] = state.dateRange;
+    const dayCount = Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1,
+    );
+
+    const result: { [key: string]: Store[] } = {};
+
+    for (let i = 0; i < dayCount; i++) {
+      result[`day-${i}`] = [];
+    }
+
+    state.stores.forEach((store, idx) => {
+      const dayIndex = idx % dayCount;
+      result[`day-${dayIndex}`].push(store);
+    });
+
+    return result;
+  });
 
   useEffect(() => {
     if (!state) {
@@ -102,17 +120,24 @@ export default function MakeDiaryPage() {
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
-
-    if (!destination) return;
+    if (
+      !destination ||
+      (source.droppableId === destination.droppableId &&
+        source.index === destination.index)
+    )
+      return;
 
     const sourceDay = source.droppableId;
     const destDay = destination.droppableId;
 
     const sourceItems = Array.from(days[sourceDay]);
+    const destItems = Array.from(days[destDay]);
     const [movedItem] = sourceItems.splice(source.index, 1);
 
-    const destItems = Array.from(days[destDay]);
-    destItems.splice(destination.index, 0, movedItem);
+    // ✅ 중복 삽입 방지: 기존에 이미 있는지 확인 후 추가
+    if (!destItems.find((item) => item.id === movedItem.id)) {
+      destItems.splice(destination.index, 0, movedItem);
+    }
 
     setDays({
       ...days,

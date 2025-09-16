@@ -14,6 +14,7 @@ type Food = {
   location: string;
   views: number;
   img: string;
+  likeCount: number;
 };
 
 function shuffle<T>(arr: T[]) {
@@ -32,6 +33,7 @@ function mapToFood(it: ListItem): Food {
     location: it.addr1 ?? '주소 정보 없음',
     img: it.firstimage || it.firstimage2 || '',
     views: Math.floor(Math.random() * 3000) + 300,
+    likeCount: 0,
   };
 }
 
@@ -116,7 +118,7 @@ const RestaurantCard = ({ item }: { item: Food }) => (
       <div className="flex items-center gap-1 mt-1">
         <img src={LikeLocation} className="w-4 h-4" alt="" />
         <p className="text-[#596072] font-kakaoSmall text-[14px]">
-          {item.views.toLocaleString()}
+          {(item.likeCount ?? 0).toLocaleString()}
         </p>
       </div>
     </div>
@@ -263,10 +265,13 @@ const HomePage = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="flex flex-wrap gap-y-6 gap-x-[0.9375rem] w-full items-start content-start self-stretch">
             {hotLoading && hotRestaurants.length === 0
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="animate-pulse">
+                  <div
+                    key={i}
+                    className="w-[calc(50%-0.46875rem)] animate-pulse"
+                  >
                     <div className="w-full aspect-square bg-[#eee] rounded-2xl" />
                     <div className="mt-3 space-y-2">
                       <div className="h-4 w-3/4 bg-[#eee] rounded" />
@@ -276,7 +281,9 @@ const HomePage = () => {
                 ))
               : hotRestaurants.length > 0
                 ? hotRestaurants.map((r) => (
-                    <RestaurantCard key={r.id} item={r} />
+                    <div key={r.id} className="w-[calc(50%-0.46875rem)]">
+                      <RestaurantCard item={r} />
+                    </div>
                   ))
                 : !hotLoading &&
                   !hotError && (

@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // ✅ TourAPI 프록시
       '/tourapi': {
         target: 'https://apis.data.go.kr',
         changeOrigin: true,
