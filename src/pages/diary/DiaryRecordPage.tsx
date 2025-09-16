@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import cameraIcon from '@/assets/icons/diary/camera.png';
+import BadgeModal from '@/components/shared/BadgeModal';
+import { extractRegionName } from '@/utils/regionUtils';
 
 type DiaryPlace = {
   id: string;
@@ -34,9 +36,19 @@ const DiaryRecordPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
+  // 뱃지 모달 상태
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [badgeData, setBadgeData] = useState<{
+    regionName: string;
+  } | null>(null);
+
   useEffect(() => {
     const fetchPlaceData = async () => {
       if (!placeId) return;
+
+      // 헤더 제목 설정
+      (window as unknown as { diaryTitle?: string }).diaryTitle =
+        '다이어리 기록';
 
       try {
         const {
@@ -184,67 +196,16 @@ const DiaryRecordPage = () => {
               (place: { place_name: string }) => place.place_name,
             );
 
-            const regionPatterns = [
-              /제주|제주도/,
-              /서울|서울시/,
-              /부산|부산시/,
-              /대구|대구시/,
-              /인천|인천시/,
-              /광주|광주시/,
-              /대전|대전시/,
-              /울산|울산시/,
-              /경기|경기도/,
-              /강원|강원도/,
-              /충북|충청북도/,
-              /충남|충청남도/,
-              /전북|전라북도/,
-              /전남|전라남도/,
-              /경북|경상북도/,
-              /경남|경상남도/,
-              /세종|세종시/,
-            ];
+            const regionName = extractRegionName(placeNames);
 
-            let regionName = '여행지';
-            for (const pattern of regionPatterns) {
-              for (const placeName of placeNames) {
-                const match = placeName.match(pattern);
-                if (match) {
-                  const region = match[0];
+            // 뱃지 모달 표시
+            setBadgeData({
+              regionName,
+            });
+            setShowBadgeModal(true);
 
-                  if (
-                    [
-                      '서울',
-                      '부산',
-                      '대구',
-                      '인천',
-                      '광주',
-                      '대전',
-                      '울산',
-                      '세종',
-                    ].includes(region)
-                  ) {
-                    regionName = region;
-                    break;
-                  }
-
-                  if (region.includes('도')) {
-                    regionName = region;
-                    break;
-                  }
-                  if (region.includes('시')) {
-                    regionName = region;
-                    break;
-                  }
-                  regionName = region + '도';
-                  break;
-                }
-              }
-              if (regionName !== '여행지') break;
-            }
-
-            alert(
-              `🎉 축하합니다!\n${regionName} 뱃지를 획득했습니다!\n마이페이지에서 확인해보세요.`,
-            );
+            // 모달이 표시된 후 페이지 이동하지 않음 (모달에서 확인 버튼 클릭 시 이동)
+            return;
           }
         }
       }
@@ -380,6 +341,20 @@ const DiaryRecordPage = () => {
           {saving ? '저장 중...' : '저장'}
         </button>
       </div>
+
+      {/* 뱃지 획득 모달 */}
+      {badgeData && (
+        <BadgeModal
+          isOpen={showBadgeModal}
+          onClose={() => {
+            setShowBadgeModal(false);
+            setBadgeData(null);
+            // 모달 닫을 때 다이어리 상세 페이지로 이동
+            navigate(`/diary/${diaryId}`);
+          }}
+          regionName={badgeData.regionName}
+        />
+      )}
     </div>
   );
 };

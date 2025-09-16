@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -49,7 +50,7 @@ export default function ProtectedRoute({
         className="w-full flex items-center justify-center"
         style={{ height: 'calc(100vh - 120px)' }}
       >
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F]"></div>
+        <LoadingSpinner />
       </div>
     );
   }

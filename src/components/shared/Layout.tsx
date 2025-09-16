@@ -88,7 +88,14 @@ const Layout = () => {
     isEvent;
 
   return (
-    <div className="w-full sm:max-w-[375px] h-full bg-[#F9FAFB] flex flex-col relative">
+    <div
+      className="w-full sm:max-w-[375px] h-full flex flex-col relative"
+      style={{
+        background: isDiaryDetail
+          ? 'linear-gradient(180deg, #F9FAFB 0%, rgba(239, 111, 111, 0.2) 100%)'
+          : '#F9FAFB',
+      }}
+    >
       {/* 상단 헤더 - 고정 */}
       {!isAuth && (
         <div className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full sm:max-w-[375px] z-50 bg-[#F9FAFB]">
@@ -164,6 +171,15 @@ const Layout = () => {
               variant="back"
               title={diaryTitle}
               backTo="/diary"
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
+            />
+          ) : isDiaryRecord ? (
+            <HeaderBar
+              variant="back"
+              title="다이어리 기록"
+              backTo={`/diary/${pathname.split('/')[2]}`}
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}
