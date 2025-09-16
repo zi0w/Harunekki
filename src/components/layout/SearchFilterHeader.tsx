@@ -59,7 +59,7 @@ export default function SearchFilterHeader({
             onClick={() => {
               navigate(isFilterPage ? basePath : `${basePath}/filter`);
             }}
-            className="shrink-0 ml-2"
+            className="shrink-0 ml-2 bg-[#F9FAFB]"
           >
             <img src={FilterIcon} className="w-6 h-6" />
           </button>
