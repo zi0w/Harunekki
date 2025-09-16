@@ -29,7 +29,8 @@ const Layout = () => {
 
   const isAuth = pathname === '/login' || pathname.startsWith('/auth');
   const isOnboarding = pathname === '/onboarding';
-
+  const isCarrier = pathname.startsWith('/carrier');
+  const isCarrierMakeDiary = pathname.startsWith('/carrier/makediary');
   // 마이페이지 상세
   const isInfo = pathname.startsWith('/mypage/info');
   const isInfoEdit = pathname === '/mypage/info/edit';
@@ -201,6 +202,24 @@ const Layout = () => {
                 setSearchKeyword(keyword);
               }}
               backTo="/"
+            />
+          ) : isCarrier ? (
+            <HeaderBar
+              variant="back"
+              title="여행지 다이어리"
+              backTo="/carrier"
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
+            />
+          ) : isCarrierMakeDiary ? (
+            <HeaderBar
+              variant="back"
+              title="여행지 다이어리"
+              backTo="/carrier"
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
             />
           ) : (
             <Header />

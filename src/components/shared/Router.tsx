@@ -23,6 +23,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LikedFilterPage from '@/pages/likes/LikedFilterPage';
 import { useState } from 'react';
 import LikedPage from '@/pages/likes/LikesPage';
+import CarrierPage from '@/pages/carrier/CarrierPage';
+import MakeDiaryPage from '@/pages/carrier/MakeDiaryPage';
 
 const Router = () => {
   const [searchKeyword] = useState('');
@@ -58,14 +60,12 @@ const Router = () => {
           <Route path="/recommend" element={<RecommendPage />} />
           <Route path="/event" element={<EventPage />} />
           <Route path="search" element={<SearchPage />} />
-
           {/* 인증 관련 페이지 */}
           <Route path="login" element={<LoginPage />} />
           <Route path="auth/email-login" element={<EmailLoginPage />} />
           <Route path="auth/email-signup" element={<EmailSignupPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="onboarding" element={<OnboardingPage />} />
-
           {/* 보호된 페이지 (로그인 필요) */}
           <Route
             path="likes"
@@ -78,7 +78,6 @@ const Router = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/likes/filter"
             element={
@@ -91,7 +90,6 @@ const Router = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/search/filter"
             element={
@@ -104,7 +102,6 @@ const Router = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="diary"
             element={
@@ -158,6 +155,22 @@ const Router = () => {
             element={
               <ProtectedRoute requireAuth={true}>
                 <MyBadges />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="carrier"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <CarrierPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="carrier/makediary"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <MakeDiaryPage />
               </ProtectedRoute>
             }
           />
