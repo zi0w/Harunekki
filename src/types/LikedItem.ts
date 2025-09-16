@@ -8,4 +8,5 @@ export type LikedItem = {
   isSeasonal?: boolean;
   isLocal?: boolean;
   type: 'restaurant' | 'food';
+  likeCount?: number;
 };

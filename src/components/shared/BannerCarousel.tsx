@@ -60,7 +60,7 @@ const BannerCarousel = () => {
       </Swiper>
 
       {/* 커스텀 스타일 */}
-      <style jsx>{`
+      <style>{`
         .banner-swiper {
           --swiper-pagination-bottom: 8px;
         }

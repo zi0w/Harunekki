@@ -1,31 +1,76 @@
 import axios, { AxiosError } from 'axios';
+import axiosRetry from 'axios-retry';
 import { supabase } from '../supabase/supabase';
 
-const SERVICE_KEY = import.meta.env.VITE_TOURAPI_KEY; // 디코딩 키 그대로 사용
+const SERVICE_KEY = import.meta.env.VITE_TOURAPI_KEY;
+const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 
-export async function fetchPopularRestaurants(limit = 50) {
-  const { data, error } = await supabase
-    .from('tour_pois')
-    .select('*')
-    .order('like_count', { ascending: false })
-    .limit(limit);
+/* ===============================
+   Axios Clients
+================================ */
+const clientV2 = axios.create({
+  baseURL: '/tourapi/B551011/KorService2',
+  timeout: 30000, // 30초
+  headers: { Accept: 'application/json' },
+  params: {
+    serviceKey: SERVICE_KEY,
+    MobileOS: 'ETC',
+    MobileApp: 'harunekki',
+    _type: 'json',
+  },
+  validateStatus: (s) => s >= 200 && s < 300,
+});
 
-  if (error) throw error;
-  return data;
-}
-export async function searchKakaoPlaces(query: string) {
-  const url = 'https://dapi.kakao.com/v2/local/search/keyword.json';
-  const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
+const clientV2Detail = axios.create({
+  baseURL: '/tourapi/B551011/KorService2',
+  timeout: 30000,
+  headers: { Accept: 'application/json' },
+  validateStatus: (s) => s >= 200 && s < 300,
+});
 
-  const res = await axios.get(url, {
-    params: { query },
-    headers: {
-      Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
+// ✅ retry 설정
+axiosRetry(clientV2, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
+axiosRetry(clientV2Detail, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+});
+
+/* ===============================
+   에러 핸들링 인터셉터
+================================ */
+function attachInterceptor(c: typeof clientV2) {
+  c.interceptors.response.use(
+    (res) => res,
+    async (error: AxiosError) => {
+      if (!error.response) {
+        return Promise.reject(
+          new Error(`[HTTP ❌ NO RESPONSE] ${error.message}`),
+        );
+      }
+      const status = error.response.status;
+      const data = error.response.data;
+      let snippet = '';
+      try {
+        snippet =
+          typeof data === 'string'
+            ? data.slice(0, 300)
+            : (JSON.stringify(data)?.slice(0, 300) ?? '');
+      } catch {
+        /* noop */
+      }
+      return Promise.reject(
+        new Error(`[HTTP ${status}] ${snippet || 'No payload'}`),
+      );
     },
-  });
-  console.log('[KAKAO API KEY]', KAKAO_REST_API_KEY);
-  return res.data.documents; // 배열
+  );
 }
+
+attachInterceptor(clientV2);
+attachInterceptor(clientV2Detail);
+
+/* ===============================
+   Type Definitions
+================================ */
 export type ListItem = {
   contentid: string;
   title: string;
@@ -51,58 +96,19 @@ export type ApiListResponse = {
   };
 };
 
-const clientV2 = axios.create({
-  baseURL: '/tourapi/B551011/KorService2',
-  timeout: 15000,
-  headers: { Accept: 'application/json' },
-  params: {
-    serviceKey: SERVICE_KEY,
-    MobileOS: 'ETC',
-    MobileApp: 'harunekki',
-    _type: 'json',
-  },
-  validateStatus: (s) => s >= 200 && s < 300,
-});
+export type DetailCommonItem = {
+  contentid: string;
+  title?: string;
+  addr1?: string;
+  firstimage?: string;
+  firstimage2?: string;
+  mapx?: string;
+  mapy?: string;
+};
 
-const clientV2Detail = axios.create({
-  baseURL: '/tourapi/B551011/KorService2',
-  timeout: 15000,
-  headers: { Accept: 'application/json' },
-  validateStatus: (s) => s >= 200 && s < 300,
-});
-
-function attachInterceptor(c: typeof clientV2) {
-  c.interceptors.response.use(
-    (res) => res,
-    async (error: AxiosError) => {
-      if (!error.response) {
-        // 응답 자체가 없음 (ex: CORS, DNS 오류, 서버 죽음 등)
-        return Promise.reject(
-          new Error(`[HTTP ❌ NO RESPONSE] ${error.message}`),
-        );
-      }
-
-      const status = error.response.status;
-      const data = error.response.data;
-      let snippet = '';
-      try {
-        snippet =
-          typeof data === 'string'
-            ? data.slice(0, 300)
-            : (JSON.stringify(data)?.slice(0, 300) ?? '');
-      } catch {
-        /* noop */
-      }
-      return Promise.reject(
-        new Error(`[HTTP ${status}] ${snippet || 'No payload'}`),
-      );
-    },
-  );
-}
-
-attachInterceptor(clientV2);
-attachInterceptor(clientV2Detail);
-
+/* ===============================
+   Utility Helpers
+================================ */
 function ensureJson<T>(data: unknown): T {
   if (typeof data === 'string') {
     const s = data.trim();
@@ -117,6 +123,7 @@ function ensureJson<T>(data: unknown): T {
   }
   return data as T;
 }
+
 function safeSnippet(v: unknown): string {
   try {
     return JSON.stringify(v)?.slice(0, 300) ?? '';
@@ -124,6 +131,7 @@ function safeSnippet(v: unknown): string {
     return '';
   }
 }
+
 function guardBody(json: ApiListResponse, debugPrefix: string) {
   if (!json?.response) {
     const snippet = safeSnippet(json);
@@ -145,8 +153,6 @@ function guardBody(json: ApiListResponse, debugPrefix: string) {
   }
   return body;
 }
-
-// 간단 에러(JSON) 포맷 감지 & throw
 
 function hasKey(o: unknown, key: string): o is Record<string, unknown> {
   return typeof o === 'object' && o !== null && key in o;
@@ -172,7 +178,34 @@ function throwIfSimpleError(v: unknown, where: string): void {
   }
 }
 
-/** 지역 코드 목록 */
+/* ===============================
+   API Wrappers
+================================ */
+
+/** ✅ 카카오 장소 검색 */
+export async function searchKakaoPlaces(query: string) {
+  const url = 'https://dapi.kakao.com/v2/local/search/keyword.json';
+
+  const res = await axios.get(url, {
+    params: { query },
+    headers: { Authorization: `KakaoAK ${KAKAO_REST_API_KEY}` },
+  });
+  return res.data.documents; // 배열
+}
+
+/** ✅ 인기 식당 불러오기 (캐시 기반) */
+export async function fetchPopularRestaurants(limit = 50) {
+  const { data, error } = await supabase
+    .from('tour_pois')
+    .select('*')
+    .order('like_count', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data;
+}
+
+/** ✅ 지역 코드 목록 */
 export async function fetchAreaCodes() {
   const { data } = await clientV2.get('/areaCode2', {
     params: { numOfRows: 50 },
@@ -182,7 +215,7 @@ export async function fetchAreaCodes() {
   return body.items?.item ?? [];
 }
 
-/** 지역/카테고리 목록 */
+/** ✅ 지역/카테고리 기반 목록 */
 export async function fetchAreaBasedList({
   areaCode,
   sigunguCode,
@@ -204,76 +237,92 @@ export async function fetchAreaBasedList({
 }) {
   const endpoint = keyword ? '/searchKeyword2' : '/areaBasedList2';
 
-  const { data } = await clientV2.get(endpoint, {
-    params: {
-      arrange,
-      pageNo,
-      numOfRows,
-      areaCode,
-      sigunguCode,
-      contentTypeId,
-      ...(keyword ? { keyword } : {}),
-    },
-    signal,
-  });
+  try {
+    const { data } = await clientV2.get(endpoint, {
+      params: {
+        arrange,
+        pageNo,
+        numOfRows,
+        areaCode,
+        sigunguCode,
+        contentTypeId,
+        ...(keyword ? { keyword } : {}),
+      },
+      signal,
+    });
 
-  const json = ensureJson<ApiListResponse>(data);
-  const body = guardBody(json, endpoint.replace('/', ''));
+    const json = ensureJson<ApiListResponse>(data);
+    const body = guardBody(json, endpoint.replace('/', ''));
+    const items = body.items?.item ?? [];
 
-  const items = body.items?.item ?? [];
+    // ✅ Supabase 캐시에 저장
+    await Promise.all(
+      items.map((item) =>
+        supabase.from('tour_pois').upsert({
+          contentid: item.contentid,
+          title: item.title,
+          addr1: item.addr1,
+          firstimage: item.firstimage,
+          firstimage2: item.firstimage2,
+          areacode: item.areacode ? parseInt(item.areacode) : undefined,
+          sigungucode: item.sigungucode
+            ? parseInt(item.sigungucode)
+            : undefined,
+          contenttypeid: item.contenttypeid
+            ? parseInt(item.contenttypeid)
+            : undefined,
+          mapx: item.mapx ? parseFloat(item.mapx) : undefined,
+          mapy: item.mapy ? parseFloat(item.mapy) : undefined,
+          raw: item,
+          updated_at: new Date().toISOString(),
+        }),
+      ),
+    );
 
-  await Promise.all(
-    items.map((item) =>
-      supabase.from('tour_pois').upsert({
-        contentid: item.contentid,
-        title: item.title,
-        addr1: item.addr1,
-        firstimage: item.firstimage,
-        firstimage2: item.firstimage2,
-        areacode: item.areacode ? parseInt(item.areacode) : undefined,
-        sigungucode: item.sigungucode ? parseInt(item.sigungucode) : undefined,
-        contenttypeid: item.contenttypeid
-          ? parseInt(item.contenttypeid)
-          : undefined,
-        mapx: item.mapx ? parseFloat(item.mapx) : undefined,
-        mapy: item.mapy ? parseFloat(item.mapy) : undefined,
-        raw: item,
-        updated_at: new Date().toISOString(),
-      }),
-    ),
-  );
+    return { items, total: body.totalCount ?? 0 };
+  } catch (err) {
+    console.error('[TourAPI 실패 → Supabase fallback]', err);
 
-  return {
-    items,
-    total: body.totalCount ?? 0,
-  };
+    // ✅ fallback: Supabase 캐시 사용
+    const { data: cached, error } = await supabase
+      .from('tour_pois')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(numOfRows);
+
+    if (error) throw error;
+    return { items: cached ?? [], total: cached?.length ?? 0 };
+  }
 }
 
-/** 상세 — 설명(overview) 제거 */
-export type DetailCommonItem = {
-  contentid: string;
-  title?: string;
-  addr1?: string;
-  firstimage?: string;
-  firstimage2?: string;
-  mapx?: string;
-  mapy?: string;
-};
-
+/** ✅ 상세 조회 */
 export async function fetchDetailCommon(
   contentId: string,
 ): Promise<DetailCommonItem> {
-  const { data } = await clientV2Detail.get('/detailCommon2', {
-    params: {
-      serviceKey: SERVICE_KEY,
-      contentId,
-      MobileOS: 'ETC',
-      MobileApp: 'harunekki',
-      _type: 'json',
-    },
-  });
-  throwIfSimpleError(data, 'detailCommon2');
-  const json = ensureJson<ApiListResponse>(data);
-  const body = guardBody(json, 'detailCommon2');
-  return (body.items?.item?.[0] ?? {}) as DetailCommonItem;
+  try {
+    const { data } = await clientV2Detail.get('/detailCommon2', {
+      params: {
+        serviceKey: SERVICE_KEY,
+        contentId,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      },
+    });
+    throwIfSimpleError(data, 'detailCommon2');
+    const json = ensureJson<ApiListResponse>(data);
+    const body = guardBody(json, 'detailCommon2');
+    return (body.items?.item?.[0] ?? {}) as DetailCommonItem;
+  } catch (err) {
+    console.error(`[TourAPI detail 실패] contentId=${contentId}`, err);
+
+    // ✅ fallback: Supabase 캐시 조회
+    const { data: cached } = await supabase
+      .from('tour_pois')
+      .select('contentid,title,addr1,firstimage,firstimage2,mapx,mapy')
+      .eq('contentid', contentId)
+      .single();
+
+    return cached ?? { contentid: contentId };
+  }
 }
