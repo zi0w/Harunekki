@@ -59,25 +59,6 @@ const BannerCarousel = () => {
         ))}
       </Swiper>
 
-      {/* 커스텀 스타일 */}
-      <style jsx>{`
-        .banner-swiper {
-          --swiper-pagination-bottom: 8px;
-        }
-
-        .banner-swiper .swiper-pagination {
-          position: relative;
-          margin-top: 12px;
-        }
-
-        .banner-swiper .swiper-pagination-bullet {
-          transition: all 0.2s ease;
-        }
-
-        .banner-swiper .swiper-pagination-bullet-active {
-          transform: scale(1.1);
-        }
-      `}</style>
     </div>
   );
 };
