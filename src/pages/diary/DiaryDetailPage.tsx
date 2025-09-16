@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import stampIcon from '@/assets/icons/diary/Stamp.png';
 import badgeIcon from '@/assets/icons/diary/Badge.png';
-import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.png';
+import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
+import { extractRegionName } from '@/utils/regionUtils';
 
 type DiaryPlace = {
   id: string;
@@ -151,83 +152,8 @@ const DiaryDetailPage = () => {
   ).length;
   const isBadgeComplete = totalPlaces > 0 && completedPlaces === totalPlaces;
 
-  // 지역명 추출 (장소명에서 지역 정보 추출)
-  const getRegionName = () => {
-    if (places.length === 0) return '여행지';
-
-    // 장소명에서 지역명 추출 시도
-    const placeNames = places.map((place) => place.place_name);
-
-    // 지역명 패턴 매칭
-    const regionPatterns = [
-      /제주|제주도/,
-      /서울|서울시/,
-      /부산|부산시/,
-      /대구|대구시/,
-      /인천|인천시/,
-      /광주|광주시/,
-      /대전|대전시/,
-      /울산|울산시/,
-      /경기|경기도/,
-      /강원|강원도/,
-      /충북|충청북도/,
-      /충남|충청남도/,
-      /전북|전라북도/,
-      /전남|전라남도/,
-      /경북|경상북도/,
-      /경남|경상남도/,
-      /세종|세종시/,
-    ];
-
-    for (const pattern of regionPatterns) {
-      for (const placeName of placeNames) {
-        const match = placeName.match(pattern);
-        if (match) {
-          // 매칭된 지역명 정리
-          const region = match[0];
-
-          // 특별시/광역시는 그대로 반환
-          if (
-            [
-              '서울',
-              '부산',
-              '대구',
-              '인천',
-              '광주',
-              '대전',
-              '울산',
-              '세종',
-            ].includes(region)
-          ) {
-            return region;
-          }
-
-          // 도 단위는 그대로 반환
-          if (region.includes('도')) return region;
-
-          // 시 단위는 그대로 반환
-          if (region.includes('시')) return region;
-
-          // 그 외에는 도 추가
-          return region + '도';
-        }
-      }
-    }
-
-    // 패턴 매칭 실패 시 첫 번째 장소명에서 지역 추출 시도
-    const firstPlace = placeNames[0];
-    if (firstPlace) {
-      // "지역명 + 장소명" 형태에서 지역명 추출
-      const parts = firstPlace.split(' ');
-      if (parts.length > 1) {
-        return parts[0];
-      }
-    }
-
-    return '여행지';
-  };
-
-  const regionName = getRegionName();
+  // 지역명 추출
+  const regionName = extractRegionName(places.map((place) => place.place_name));
 
   return (
     <div className="w-full flex flex-col mt-6 gap-12 pb-8">
@@ -306,13 +232,10 @@ const DiaryDetailPage = () => {
             <img
               src={isBadgeComplete ? badgeCompleteIcon : badgeIcon}
               alt={isBadgeComplete ? '완성된 뱃지' : '뱃지'}
-              className="w-32 h-34"
+              className={`object-contain ${
+                isBadgeComplete ? 'w-42 h-42' : 'w-32 h-34'
+              }`}
             />
-            {isBadgeComplete && (
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#FF6B9D] rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">✓</span>
-              </div>
-            )}
           </div>
           <div className="mt-4 text-center">
             <p className="text-[#383D48] font-kakaoBig text-lg">

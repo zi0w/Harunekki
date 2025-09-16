@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 
-import BannerImg1 from '@/assets/icons/home/Banner.png';
-import BannerImg2 from '@/assets/icons/home/Banner2.png';
+import BannerImg1 from '@/assets/icons/home/Banner1.webp';
+import BannerImg2 from '@/assets/icons/home/Banner2.webp';
 
 interface BannerItem {
   id: number;
@@ -59,25 +59,6 @@ const BannerCarousel = () => {
         ))}
       </Swiper>
 
-      {/* 커스텀 스타일 */}
-      <style>{`
-        .banner-swiper {
-          --swiper-pagination-bottom: 8px;
-        }
-
-        .banner-swiper .swiper-pagination {
-          position: relative;
-          margin-top: 12px;
-        }
-
-        .banner-swiper .swiper-pagination-bullet {
-          transition: all 0.2s ease;
-        }
-
-        .banner-swiper .swiper-pagination-bullet-active {
-          transform: scale(1.1);
-        }
-      `}</style>
     </div>
   );
 };

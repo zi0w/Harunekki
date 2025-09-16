@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { askRecommend } from '@/lib/api/recommend';
 import bappul from '@/assets/icons/recommend/Image.png';
 

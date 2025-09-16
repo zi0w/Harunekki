@@ -1,6 +1,8 @@
 import Layout from '@/components/shared/Layout';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import AuthCallback from '@/pages/auth/AuthCallback';
+import EmailLoginPage from '@/pages/auth/EmailLoginPage';
+import EmailSignupPage from '@/pages/auth/EmailSignupPage';
 import LoginPage from '@/pages/auth/LoginPage';
 import OnboardingPage from '@/pages/auth/OnboardingPage';
 import DiaryPage from '@/pages/diary/DiaryPage';
@@ -60,6 +62,8 @@ const Router = () => {
           <Route path="search" element={<SearchPage />} />
           {/* 인증 관련 페이지 */}
           <Route path="login" element={<LoginPage />} />
+          <Route path="auth/email-login" element={<EmailLoginPage />} />
+          <Route path="auth/email-signup" element={<EmailSignupPage />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="onboarding" element={<OnboardingPage />} />
           {/* 보호된 페이지 (로그인 필요) */}
