@@ -7,6 +7,7 @@ import LikeLocation from '@/assets/icons/home/heart.svg';
 import BannerCarousel from '@/components/shared/BannerCarousel';
 
 import { fetchAreaBasedList, type ListItem } from '@/lib/api/tourapi';
+import { fetchSeasonalFoods } from '@/lib/api/seasonalFoods';
 
 type Food = {
   id: string;
@@ -16,15 +17,6 @@ type Food = {
   img: string;
   likeCount: number;
 };
-
-function shuffle<T>(arr: T[]) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 function mapToFood(it: ListItem): Food {
   return {
@@ -53,12 +45,7 @@ const SectionHeader = ({ title, to }: { title: string; to?: string }) => (
 );
 
 const ChipRowCard = ({ item }: { item: Food }) => (
-  <Link
-    to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
-    state={{ item }}
-    className="inline-flex flex-col w-[104px] mr-4 shrink-0"
-    aria-label={item.title}
-  >
+  <div className="inline-flex flex-col w-[104px] mr-4 shrink-0">
     <div className="w-[6.25rem] h-[6.25rem] rounded-xl overflow-hidden bg-gray-200">
       {item.img ? (
         <img
@@ -82,7 +69,7 @@ const ChipRowCard = ({ item }: { item: Food }) => (
           : item.location}
       </p>
     </div>
-  </Link>
+  </div>
 );
 
 const RestaurantCard = ({ item }: { item: Food }) => (
@@ -142,18 +129,22 @@ const HomePage = () => {
       setSfLoading(true);
       setSfError(null);
       try {
-        const { items } = await fetchAreaBasedList({
-          contentTypeId: 39,
-          pageNo: 1,
-          numOfRows: 80,
-          arrange: 'Q',
-        });
+        const seasonalCards = await fetchSeasonalFoods();
 
-        const mapped = (items || []).map(mapToFood);
-        const withImg = mapped.filter((m) => !!m.img);
-        const randomPick = shuffle(withImg).slice(0, 12);
+        // SeasonalCard를 Food 타입으로 변환
+        const mapped: Food[] = seasonalCards.map((card) => ({
+          id: card.id,
+          title: card.title,
+          location: card.location,
+          img: card.img,
+          views: Math.floor(Math.random() * 3000) + 300,
+          likeCount: 0,
+        }));
 
-        if (!cancelled) setSeasonalFoods(randomPick);
+        // 최대 12개까지만 표시
+        const limited = mapped.slice(0, 12);
+
+        if (!cancelled) setSeasonalFoods(limited);
       } catch (e: unknown) {
         const msg =
           e instanceof Error

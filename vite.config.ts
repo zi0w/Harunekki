@@ -18,6 +18,13 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/tourapi/, ''),
         secure: true,
       },
+      // ✅ 농촌진흥청 API 프록시
+      '/nongsaro': {
+        target: 'http://api.nongsaro.go.kr',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/nongsaro/, ''),
+        secure: false,
+      },
     },
     port: 3000,
   },

@@ -1,98 +1,99 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import CardItem, { type Card } from '@/components/layout/CardItem';
+import { Link } from 'react-router-dom';
+import ArrowLocation from '@/assets/icons/home/location.svg';
+import { fetchSeasonalFoods, type SeasonalCard } from '@/lib/api/seasonalFoods';
 
-const REGIONS: Array<{ label: string; code?: number }> = [
-  { label: '전체', code: undefined },
-  { label: '서울', code: 1 },
-  { label: '인천', code: 2 },
-  { label: '경기', code: 31 },
-  { label: '강원', code: 32 },
-  { label: '대전', code: 3 },
-  { label: '세종', code: 8 },
-];
+// 제철 음식용 간단한 카드 컴포넌트
+function SeasonalFoodCard({ item }: { item: SeasonalCard }) {
+  return (
+    <Link
+      to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
+      state={{ item }}
+      className="block relative rounded-2xl"
+    >
+      {/* 이미지 */}
+      <div className="relative w-full h-[150px] rounded-2xl overflow-hidden bg-[#f4f5f7]">
+        {item.img ? (
+          <img
+            src={item.img}
+            alt={item.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#e9ecf1]" />
+        )}
+      </div>
 
-// TourAPI 호출 함수
-async function fetchSeasonalFoods(region?: number) {
-  const { data } = await axios.get(
-    'https://apis.data.go.kr/B551011/KorService1/areaBasedList1',
-    {
-      params: {
-        MobileOS: 'ETC',
-        MobileApp: 'Harunekki',
-        serviceKey: import.meta.env.VITE_TOURAPI_KEY, // .env에 넣기
-        contentTypeId: 39,
-        cat3: 'A05020700', // 지역특산음식
-        numOfRows: 20,
-        pageNo: 1,
-        _type: 'json',
-        ...(region ? { areaCode: region } : {}),
-      },
-    },
+      {/* 텍스트 */}
+      <div className="mt-3">
+        <p className="truncate text-[#383D48] font-kakaoSmall text-[16px] leading-6 tracking-[-0.02rem]">
+          {item.title.length > 13 ? item.title.slice(0, 13) + '…' : item.title}
+        </p>
+        <div className="flex items-center gap-1">
+          <img src={ArrowLocation} className="w-4 h-4" alt="" />
+          <p className="truncate text-[#596072] font-kakaoSmall text-[14px] leading-[1.26rem] tracking-[-0.0175rem]">
+            {item.location || '주소 정보 없음'}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
-  return data?.response?.body?.items?.item ?? [];
 }
 
 export default function SeasonalFoodsPage() {
-  const [activeRegion, setActiveRegion] = useState<number | undefined>();
-  const [items, setItems] = useState<Card[]>([]);
-  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [items, setItems] = useState<SeasonalCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      setErrMsg(null);
+    const loadSeasonalFoods = async () => {
       try {
-        const foods = await fetchSeasonalFoods(activeRegion);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped: Card[] = foods.map((f: any) => ({
-          id: f.contentid,
-          title: f.title,
-          location: f.addr1 ?? '전국',
-          img: f.firstimage ?? '',
-          views: Math.floor(Math.random() * 5000) + 500,
-          liked: false,
-          likeCount: 0,
-        }));
-        setItems(mapped);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
-        setErrMsg(e.message ?? '불러오기 실패');
+        setLoading(true);
+        const foodCards = await fetchSeasonalFoods();
+        setItems(foodCards);
+      } catch (error) {
+        console.error('제철음식 데이터 로드 실패:', error);
+        setItems([]);
+      } finally {
+        setLoading(false);
       }
-    })();
-  }, [activeRegion]);
+    };
+
+    loadSeasonalFoods();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-[20.9375rem]">
+        <div className="mt-4 text-center">
+          <h2 className="text-lg font-bold text-[#383D48] mb-2">
+            {new Date().getMonth() + 1}월 제철 음식
+          </h2>
+          <p className="text-sm text-[#8A8A8A]">
+            제철 음식 정보를 불러오는 중...
+          </p>
+        </div>
+        <div className="mt-6 flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-[20.9375rem]">
-      <div className="mt-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-        <div className="inline-flex gap-3 px-2">
-          {REGIONS.map((r) => (
-            <button
-              key={r.label}
-              onClick={() => setActiveRegion(r.code)}
-              className={`relative shrink-0 px-2 py-2 font-kakaoSmall text-[14px] ${
-                activeRegion === r.code
-                  ? 'text-[#EF6F6F] font-bold bg-[#F9FAFB]'
-                  : 'text-[#8A8A8A] bg-[#F9FAFB]'
-              }`}
-            >
-              {r.label}
-              {activeRegion === r.code && (
-                <span className="absolute left-1 right-1 -bottom-0.5 h-[2px] rounded bg-[#EF6F6F]" />
-              )}
-            </button>
-          ))}
-        </div>
+      <div className="mt-4 text-center">
+        <h2 className="text-lg font-bold text-[#383D48] mb-2">
+          {new Date().getMonth() + 1}월 제철 음식
+        </h2>
+        <p className="text-sm text-[#8A8A8A]">
+          이달의 신선한 제철 음식을 만나보세요
+        </p>
       </div>
 
-      {errMsg && (
-        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {errMsg}
-        </div>
-      )}
-
-      <div className="mt-4 grid grid-cols-2 gap-y-6 gap-x-4">
-        {items.map((it) => (
-          <CardItem key={it.id} item={it} setItems={setItems} />
+      <div className="mt-6 grid grid-cols-2 gap-y-6 gap-x-4">
+        {items.map((item) => (
+          <SeasonalFoodCard key={item.id} item={item} />
         ))}
       </div>
     </div>

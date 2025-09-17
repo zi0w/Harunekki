@@ -16,7 +16,8 @@ const Layout = () => {
   const isHome = pathname === '/';
 
   //제철음식 페이지
-  const isSeasonalFoods = pathname.startsWith('/foods/seasonal');
+  const isSeasonalFoods = pathname === '/foods/seasonal';
+  const isSeasonalFoodDetail = pathname.startsWith('/foods/seasonal/detail');
 
   //인기 식당 페이지
   const isHotRestaurants = pathname.startsWith('/restaurants/hot');
@@ -147,6 +148,15 @@ const Layout = () => {
                   onClick={() => navigate('/carrier')}
                 />
               }
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
+            />
+          ) : isSeasonalFoodDetail ? (
+            <HeaderBar
+              variant="back"
+              title="제철 음식"
+              backTo="/foods/seasonal"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}
