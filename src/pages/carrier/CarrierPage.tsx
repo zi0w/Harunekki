@@ -226,18 +226,36 @@ export default function CarrierPage() {
         };
       });
 
-      // 5️⃣ Supabase에 저장
+      // 5️⃣ 실제 장소들의 지역 확인하여 regionName 결정
+      const actualRegions = new Set<string>();
+      for (const store of storesWithCoords) {
+        const region = extractRegionFromLocation(store.location ?? '');
+        if (region && region !== '기타') {
+          actualRegions.add(region);
+        }
+      }
+
+      let regionName: string;
+      if (actualRegions.size === 0) {
+        regionName = '국내 여행';
+      } else if (actualRegions.size === 1) {
+        const singleRegion = Array.from(actualRegions)[0];
+        regionName = singleRegion === '강원' ? '강원특별자치도' : singleRegion;
+      } else {
+        regionName = '국내 여행';
+      }
+
+      // 6️⃣ Supabase에 저장
       const diary = await createDiaryWithPlaces({
         userId: user.id,
         title,
         startDate: dateRange[0].toISOString().slice(0, 10),
         endDate: dateRange[1].toISOString().slice(0, 10),
         stores: storesWithCoords,
-        regionName:
-          recommendedRegion === '강원' ? '강원특별자치도' : recommendedRegion,
+        regionName,
       });
 
-      // 6️⃣ MakeDiaryPage로 이동 + 좌표 포함된 stores 넘김
+      // 7️⃣ MakeDiaryPage로 이동 + 좌표 포함된 stores 넘김
       navigate('/carrier/makediary', {
         state: {
           diaryId: diary.id,
