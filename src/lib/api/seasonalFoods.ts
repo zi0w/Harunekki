@@ -91,29 +91,30 @@ export const getImageUrl = (item: any): string => {
 //   }
 //
 
-// 농촌진흥청 시절식 API 호출 함수 (CORS 프록시 사용)
+// 농촌진흥청 시절식 API 호출 함수 (Supabase Edge Function 사용)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
-    console.log('🔄 제철음식 API 호출 시작');
+    console.log('🔄 제철음식 API 호출 시작 (Supabase Edge Function)');
     
-    const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
-    if (!apiKey) {
-      console.error('❌ NONGSARO_API_KEY가 설정되지 않았습니다.');
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('❌ Supabase 환경변수가 설정되지 않았습니다.');
       return [];
     }
     
-    console.log('🔑 API 키:', apiKey.substring(0, 10) + '...');
-
-    // CORS 프록시 사용 (codetabs)
-    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
-    const targetUrl = `http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst?apikey=${apiKey}&schType=B&tema_ctg01=TM003&numOfRows=10`;
+    console.log('🌐 Supabase URL:', supabaseUrl);
     
-    console.log('🌐 요청 URL:', proxyUrl + encodeURIComponent(targetUrl));
-    
-    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`, {
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     console.log('📡 응답 상태:', response.status, response.statusText);
-    
+
     if (!response.ok) {
       console.error('❌ API 호출 실패:', response.status, response.statusText);
       throw new Error(`API 호출 실패: ${response.status}`);
@@ -122,7 +123,7 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
     // 응답이 XML인지 JSON인지 확인
     const contentType = response.headers.get('content-type');
     console.log('📄 Content-Type:', contentType);
-    
+
     let data;
 
     if (contentType && contentType.includes('application/json')) {
