@@ -43,12 +43,6 @@ export default function MakeDiaryPage() {
     }[];
   } | null;
 
-  console.log('넘어온 state:', state);
-  console.log('넘어온 store들 좌표 확인');
-  state?.stores.forEach((s) => {
-    console.log(s.title, '→', s.mapx, s.mapy);
-  });
-
   type Store = {
     id: string;
     title: string;
@@ -90,8 +84,6 @@ export default function MakeDiaryPage() {
     const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
     loadKakaoMapScript(apiKey).then(() => {
-      console.log('카카오맵 SDK 로드 완료');
-
       if (window.kakao && mapRef.current) {
         const { kakao } = window;
 

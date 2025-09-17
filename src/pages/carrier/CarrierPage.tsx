@@ -264,8 +264,6 @@ export default function CarrierPage() {
           stores: storesWithCoords,
         },
       });
-
-      console.log('✅ 최종 전달될 stores (좌표 포함):', storesWithCoords);
     } catch (err) {
       console.error('다이어리 저장 실패:', err);
       alert('저장 중 오류가 발생했습니다.');

@@ -25,7 +25,6 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
   useEffect(() => {
     fetchAllLikedItems()
       .then((res) => {
-        console.log('불러온 좋아요 아이템:', res);
         setItems(res);
         setLoading(false);
       })
@@ -38,9 +37,7 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
   useEffect(() => {
     ensureUserExists()
       .then(() => {
-        supabase.auth.getUser().then(({ data }) => {
-          console.log('현재 로그인 유저 ID:', data.user?.id);
-        });
+        supabase.auth.getUser().then(({ data }) => {});
       })
       .catch((err) => {
         console.error('유저 등록 실패:', err.message);

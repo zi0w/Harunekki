@@ -155,9 +155,6 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
         return 0;
       });
 
-      // 설명 개선은 개별 컴포넌트에서 필요시에만 실행
-      // enhanceDescriptionsAsync(sortedCards);
-
       return sortedCards;
     }
 
