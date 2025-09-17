@@ -15,16 +15,17 @@ const pinIcons = [pinRed, pinYellow, pinGreen, pinBlue];
 declare global {
   interface Window {
     kakao: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       maps: any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [key: string]: any;
     };
   }
 }
+
 export default function MakeDiaryPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const mapRef = useRef<HTMLDivElement | null>(null);
 
   const state = (location.state ?? null) as {
@@ -39,6 +40,13 @@ export default function MakeDiaryPage() {
       mapy?: number;
     }[];
   } | null;
+
+  console.log('넘어온 state:', state);
+  console.log('넘어온 store들 좌표 확인');
+  state.stores.forEach((s) => {
+    console.log(s.title, '→', s.mapx, s.mapy);
+  });
+
   type Store = {
     id: string;
     title: string;
@@ -51,14 +59,15 @@ export default function MakeDiaryPage() {
   // ✅ 여행 일자별 스토어를 그룹화한 상태로 관리
   const [days, setDays] = useState<{ [key: string]: Store[] }>(() => {
     if (!state) return {};
-
     const [startDate, endDate] = state.dateRange;
-    const dayCount = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1,
-    );
+
+    const dayCount =
+      Math.floor(
+        (endDate.setHours(0, 0, 0, 0) - startDate.setHours(0, 0, 0, 0)) /
+          (1000 * 60 * 60 * 24),
+      ) + 1;
 
     const result: { [key: string]: Store[] } = {};
-
     for (let i = 0; i < dayCount; i++) {
       result[`day-${i}`] = [];
     }
@@ -72,51 +81,147 @@ export default function MakeDiaryPage() {
   });
 
   useEffect(() => {
-    if (!state) {
-      navigate('/carrier', { replace: true });
-    }
+    if (!state) navigate('/carrier', { replace: true });
   }, [state, navigate]);
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
+
     loadKakaoMapScript(apiKey).then(() => {
       console.log('카카오맵 SDK 로드 완료');
-    });
-  }, []);
 
+      if (window.kakao && mapRef.current) {
+        const { kakao } = window;
+
+        // 지도 중심: 첫 번째 스토어 or 서울 기본
+        const firstStore = state?.stores?.find((s) => s.mapy && s.mapx);
+        const center = firstStore
+          ? new kakao.maps.LatLng(firstStore.mapy, firstStore.mapx)
+          : new kakao.maps.LatLng(37.5665, 126.978);
+
+        const options = {
+          center,
+          level: 5,
+        };
+
+        // ✅ 지도 인스턴스 생성
+        const map = new kakao.maps.Map(mapRef.current, options);
+        mapInstanceRef.current = map;
+
+        // ✅ 마커 렌더링
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
+
+        Object.entries(days).forEach(([_, stores], index) => {
+          stores.forEach((store) => {
+            if (!store.mapx || !store.mapy) return;
+
+            const markerImage = new kakao.maps.MarkerImage(
+              pinIcons[index % pinIcons.length],
+              new kakao.maps.Size(32, 32),
+              { offset: new kakao.maps.Point(16, 32) },
+            );
+
+            const marker = new kakao.maps.Marker({
+              position: new kakao.maps.LatLng(store.mapy, store.mapx),
+              map,
+              image: markerImage,
+            });
+
+            const infowindow = new kakao.maps.InfoWindow({
+              content: `<div style="padding:6px;font-size:12px;">${store.title}</div>`,
+            });
+
+            kakao.maps.event.addListener(marker, 'click', () => {
+              infowindow.open(map, marker);
+            });
+
+            markersRef.current.push(marker);
+          });
+        });
+      }
+    });
+  }, [state, days]);
+
+  // ✅ 지도 초기 생성
   useEffect(() => {
-    if (!state || !mapRef.current || !window.kakao || !window.kakao.maps)
-      return;
+    if (!window.kakao || !mapInstanceRef.current) return;
 
+    const map = mapInstanceRef.current;
     const { kakao } = window;
-    const center =
-      state.stores.find((s) => s.mapx && s.mapy) || state.stores[0];
 
-    const map = new kakao.maps.Map(mapRef.current, {
-      center: new kakao.maps.LatLng(
-        center?.mapy || 37.5665,
-        center?.mapx || 126.978,
-      ),
-      level: 5,
+    // 기존 마커 제거
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    Object.entries(days).forEach(([_, stores], index) => {
+      stores.forEach((store) => {
+        if (!store.mapx || !store.mapy) return;
+
+        const markerImage = new kakao.maps.MarkerImage(
+          pinIcons[index % pinIcons.length],
+          new kakao.maps.Size(32, 32),
+          { offset: new kakao.maps.Point(16, 32) },
+        );
+
+        const marker = new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(store.mapy, store.mapx),
+          map,
+          image: markerImage,
+        });
+
+        const infowindow = new kakao.maps.InfoWindow({
+          content: `<div style="padding:6px;font-size:12px;">${store.title}</div>`,
+        });
+
+        kakao.maps.event.addListener(marker, 'click', () => {
+          infowindow.open(map, marker);
+        });
+
+        markersRef.current.push(marker);
+      });
     });
+  }, [days]);
 
-    state.stores.forEach((s) => {
-      if (!s.mapx || !s.mapy) return;
+  // ✅ days 상태 변경될 때마다 마커 다시 그림
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.kakao) return;
 
-      const marker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(s.mapy, s.mapx),
-        map,
-      });
+    const map = mapInstanceRef.current;
+    const { kakao } = window;
 
-      const infowindow = new kakao.maps.InfoWindow({
-        content: `<div style="padding:6px;font-size:12px;">${s.title}</div>`,
-      });
+    // 기존 마커 제거
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
 
-      kakao.maps.event.addListener(marker, 'click', () => {
-        infowindow.open(map, marker);
+    Object.entries(days).forEach(([_, stores], index) => {
+      stores.forEach((store) => {
+        if (!store.mapx || !store.mapy) return;
+
+        const markerImage = new kakao.maps.MarkerImage(
+          pinIcons[index % pinIcons.length],
+          new kakao.maps.Size(32, 32),
+          { offset: new kakao.maps.Point(16, 32) },
+        );
+
+        const marker = new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(store.mapy, store.mapx),
+          map,
+          image: markerImage,
+        });
+
+        const infowindow = new kakao.maps.InfoWindow({
+          content: `<div style="padding:6px;font-size:12px;">${store.title}</div>`,
+        });
+
+        kakao.maps.event.addListener(marker, 'click', () => {
+          infowindow.open(map, marker);
+        });
+
+        markersRef.current.push(marker);
       });
     });
-  }, [state]);
+  }, [days, mapInstanceRef.current]); // 여기에 mapInstanceRef.current 의존성 추가
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -134,7 +239,6 @@ export default function MakeDiaryPage() {
     const destItems = Array.from(days[destDay]);
     const [movedItem] = sourceItems.splice(source.index, 1);
 
-    // ✅ 중복 삽입 방지: 기존에 이미 있는지 확인 후 추가
     if (!destItems.find((item) => item.id === movedItem.id)) {
       destItems.splice(destination.index, 0, movedItem);
     }
@@ -150,10 +254,10 @@ export default function MakeDiaryPage() {
 
   return (
     <div className="w-full max-w-[20.9375rem] mx-auto h-[100dvh] flex flex-col">
-      {/* 1. 상단 영역 */}
-      <div className=" shrink-0">
+      {/* 상단 영역 */}
+      <div className="shrink-0">
         <h1
-          className=" mt-4 text-[1.25rem] font-bold leading-[2rem] tracking-[-0.01rem]"
+          className="mt-4 text-[1.25rem] font-bold leading-[2rem] tracking-[-0.01rem]"
           style={{ color: '#383D48', fontFamily: 'Kakao Big Sans' }}
         >
           {state.title}
@@ -174,7 +278,7 @@ export default function MakeDiaryPage() {
         </div>
       </div>
 
-      {/* 2. 중간 드래그 영역 */}
+      {/* 중간 드래그 영역 */}
       <div className="flex-1 overflow-y-auto mt-5">
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="space-y-6 pb-4">
@@ -198,7 +302,20 @@ export default function MakeDiaryPage() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className="flex items-center rounded-lg border bg-white p-2 shadow-sm"
+                              className="flex items-center rounded-lg border bg-white p-2 shadow-sm cursor-pointer"
+                              onClick={() => {
+                                if (
+                                  s.mapx &&
+                                  s.mapy &&
+                                  mapInstanceRef.current
+                                ) {
+                                  const latlng = new window.kakao.maps.LatLng(
+                                    s.mapy,
+                                    s.mapx,
+                                  );
+                                  mapInstanceRef.current.setCenter(latlng);
+                                }
+                              }}
                             >
                               <img
                                 src={s.img || 'https://picsum.photos/100'}
@@ -223,21 +340,21 @@ export default function MakeDiaryPage() {
             ))}
           </div>
         </DragDropContext>
-      </div>
 
-      {/* 3. 하단 확정 버튼 */}
-      <div className="shrink-0 px-4 pb-6 pt-2 border-t">
-        <button
-          onClick={() => navigate('/diary')}
-          className="w-full text-white py-3 font-semibold"
-          style={{
-            borderRadius: '0.75rem',
-            background: '#EF6F6F',
-            boxShadow: '0 4px 20px 0 #BEC4D3',
-          }}
-        >
-          여행지 확정하기
-        </button>
+        {/* 하단 확정 버튼 */}
+        <div className="shrink-0 pb-6 pt-2 border-t">
+          <button
+            onClick={() => navigate('/diary')}
+            className="w-full text-white py-3 font-semibold"
+            style={{
+              borderRadius: '0.75rem',
+              background: '#EF6F6F',
+              boxShadow: '0 4px 20px 0 #BEC4D3',
+            }}
+          >
+            여행지 확정하기
+          </button>
+        </div>
       </div>
     </div>
   );
