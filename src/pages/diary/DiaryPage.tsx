@@ -129,7 +129,7 @@ const DiaryPage = () => {
               <img
                 src={seasonalThumbnail}
                 alt="다이어리"
-                className="w-12 h-12 opacity-50"
+                className="w-48 h-48 opacity-50"
               />
             </div>
           </div>
