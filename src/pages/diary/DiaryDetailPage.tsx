@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import stampIcon from '@/assets/icons/diary/Stamp.png';
 import badgeIcon from '@/assets/icons/diary/Badge.png';
 import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
 import { extractRegionName } from '@/utils/regionUtils';
+import { deleteDiary } from '@/lib/supabase/diaries';
+import Modal from '@/components/common/Modal';
 
 type DiaryPlace = {
   id: string;
@@ -28,9 +30,42 @@ type Diary = {
 
 const DiaryDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [diary, setDiary] = useState<Diary | null>(null);
   const [places, setPlaces] = useState<DiaryPlace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // 설정 버튼을 헤더에 추가하기 위한 전역 상태 설정
+  useEffect(() => {
+    if (id) {
+      (
+        window as unknown as { diarySettingsButton?: React.ReactNode }
+      ).diarySettingsButton = (
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="flex items-center justify-center px-2 py-1 rounded-full"
+          aria-label="삭제"
+        >
+          <span
+            style={{
+              color: '#666666',
+              fontSize: '12px',
+              fontWeight: 'normal',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            삭제
+          </span>
+        </button>
+      );
+    }
+    return () => {
+      (
+        window as unknown as { diarySettingsButton?: React.ReactNode }
+      ).diarySettingsButton = undefined;
+    };
+  }, [id]);
 
   useEffect(() => {
     const fetchDiaryData = async () => {
@@ -155,6 +190,19 @@ const DiaryDetailPage = () => {
   // 지역명 추출
   const regionName = extractRegionName(places.map((place) => place.place_name));
 
+  // 다이어리 삭제 함수
+  const handleDeleteDiary = async () => {
+    if (!id) return;
+
+    try {
+      await deleteDiary(id);
+      navigate('/diary');
+    } catch (error) {
+      console.error('다이어리 삭제 실패:', error);
+      alert('다이어리 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="w-full flex flex-col mt-6 gap-12 pb-8">
       {/* 일자별 스탬프 */}
@@ -206,24 +254,7 @@ const DiaryDetailPage = () => {
         </div>
       ))}
 
-      {/* 추가 스탬프 스켈레톤 (필요시) */}
-      {places.length === 0 && (
-        <div className="w-full">
-          <div className="flex items-center mb-4">
-            <div className="bg-gray-200 text-transparent px-3 py-1 rounded-full text-sm font-kakaoBig animate-pulse">
-              Day {days.length + 1}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2].map((stamp) => (
-              <div key={stamp} className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse"></div>
-                <div className="mt-2 h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* 추가 스탬프 스켈레톤 (필요시) - 제거 */}
 
       {/* 뱃지 섹션 */}
       <div className="w-full mt-12">
@@ -247,6 +278,20 @@ const DiaryDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        open={showDeleteModal}
+        title="정말 다이어리를 삭제하시겠어요?"
+        description="한 번 삭제하면 모든 기록이 
+        사라지니 신중한 선택 부탁드려요."
+        confirmText="삭제하기"
+        onConfirm={() => {
+          setShowDeleteModal(false);
+          handleDeleteDiary();
+        }}
+        onClose={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };

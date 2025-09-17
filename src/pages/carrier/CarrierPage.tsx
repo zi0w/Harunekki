@@ -3,16 +3,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { createDiaryWithPlaces } from '@/lib/supabase/diaries';
-import { supabase } from '@/lib/supabase/supabase';
-import {
-  ensureUserExists,
-  fetchAllLikedItems,
-  fetchLikeCounts,
-} from '@/lib/supabase/likes';
+import { fetchAllLikedItems, fetchLikeCounts } from '@/lib/supabase/likes';
 import type { LikedItem } from '@/types/LikedItem';
 import LocationIcon from '@/assets/icons/home/location.svg';
 import LikeIcon from '@/assets/icons/home/heart.svg';
+import Modal from '@/components/common/Modal';
 
 export default function CarrierPage() {
   const navigate = useNavigate();
@@ -20,6 +15,7 @@ export default function CarrierPage() {
   const [title, setTitle] = useState('');
   const [dateRange, setDateRange] = useState<[Date, Date] | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [stores, setStores] = useState<LikedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,40 +67,20 @@ export default function CarrierPage() {
       return;
     }
 
-    const confirmed = window.confirm('여행지를 확정하시겠어요?');
-    if (!confirmed) return;
+    setShowConfirmModal(true);
+  };
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
+  const handleConfirmDiary = async () => {
+    setShowConfirmModal(false);
 
-    try {
-      await ensureUserExists();
-
-      const diary = await createDiaryWithPlaces({
-        userId: user.id,
+    // MakeDiaryPage로 이동 (다이어리 생성은 MakeDiaryPage에서 처리)
+    navigate('/carrier/makediary', {
+      state: {
         title,
-        startDate: dateRange[0].toISOString().slice(0, 10),
-        endDate: dateRange[1].toISOString().slice(0, 10),
+        dateRange,
         stores,
-      });
-
-      navigate('/carrier/makediary', {
-        state: {
-          diaryId: diary.id,
-          title,
-          dateRange,
-          stores,
-        },
-      });
-    } catch (err) {
-      console.error('다이어리 저장 실패:', err);
-      alert('저장 중 오류가 발생했습니다.');
-    }
+      },
+    });
   };
 
   return (
@@ -192,8 +168,11 @@ export default function CarrierPage() {
       </div>
 
       {calendarOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-4 rounded-xl shadow-lg">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          style={{ zIndex: 9999 }}
+        >
+          <div className="bg-white p-4 rounded-xl shadow-lg max-w-sm w-full mx-4">
             <Calendar
               selectRange
               onChange={(value) => {
@@ -280,6 +259,17 @@ export default function CarrierPage() {
           여행지 확정하기
         </button>
       </div>
+
+      {/* 여행지 확정 확인 모달 */}
+      <Modal
+        open={showConfirmModal}
+        title="여행지를 확정하시겠어요?"
+        description="확정하시면 다이어리가 생성되고
+        여행 계획을 세울 수 있어요."
+        confirmText="확정하기"
+        onConfirm={handleConfirmDiary}
+        onClose={() => setShowConfirmModal(false)}
+      />
     </div>
   );
 }
