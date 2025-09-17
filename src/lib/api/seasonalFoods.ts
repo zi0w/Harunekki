@@ -91,44 +91,22 @@ export const getImageUrl = (item: any): string => {
 //   }
 //
 
-// 농촌진흥청 시절식 API 호출 함수
+// 농촌진흥청 시절식 API 호출 함수 (Supabase Edge Function 사용)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
-    const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
-    if (!apiKey) {
-      console.error('NOGNSARO_API_KEY가 설정되지 않았습니다.');
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      console.error('VITE_SUPABASE_URL이 설정되지 않았습니다.');
       return [];
     }
 
-    const url = new URL(
-      '/nongsaro/service/nvpcFdCkry/fdNmLst',
-      'https://apis.data.go.kr',
-    );
-    url.search = new URLSearchParams({
-      apiKey: apiKey,
-      apiType: 'json',
-      pageNo: '1',
-      numOfRows: '30',
-      schType: 'B',
-      tema_ctg01: 'TM003',
-    }).toString();
-
-    const response = await fetch(url.toString());
+    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`);
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
     }
 
-    // 응답이 XML인지 JSON인지 확인
-    const contentType = response.headers.get('content-type');
-    let data;
-
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      const xmlText = await response.text();
-      data = parseXmlToJson(xmlText);
-    }
+    const data = await response.json();
 
     if (data?.response?.body?.items) {
       const foodCards: SeasonalCard[] = data.response.body.items.map(
