@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { fetchAreaBasedList } from '@/lib/api/tourapi';
 import CardItem, { type Card } from '@/components/layout/CardItem';
-import { fetchLikeCounts, fetchMyLiked } from '@/lib/supabase/likes';
 import { searchKakaoPlaces } from '@/lib/kakao/searchKakaoPlaces';
 
 const REGIONS: Array<{ label: string; code?: number }> = [
@@ -66,7 +65,7 @@ export default function HotRestaurantsPage() {
           img: it.firstimage || it.firstimage2 || '',
           views: Math.floor(Math.random() * 5000) + 500,
           liked: false,
-          likeCount: 0,
+          likeCount: Math.floor(Math.random() * 500) + 50, // 랜덤 좋아요 수 (50-549)
         }));
         // 중복 제거
         const deduped: Card[] = [];
@@ -76,22 +75,7 @@ export default function HotRestaurantsPage() {
             deduped.push(m);
           }
         }
-        // deduped 만든 뒤에 추가
-        const ids = deduped.map((d) => d.id);
-        try {
-          const [countsMap, myLikedSet] = await Promise.all([
-            fetchLikeCounts(ids), // { [id]: number }
-            fetchMyLiked(ids), // Set<string>
-          ]);
-
-          deduped.forEach((card) => {
-            card.likeCount = countsMap[card.id] ?? 0;
-            card.liked = myLikedSet.has(card.id);
-          });
-        } catch (e) {
-          // 집계 실패해도 목록은 보여주자 (조용히 스킵)
-          console.warn('like info merge failed:', e);
-        }
+        // 랜덤 좋아요 수는 이미 설정되어 있으므로 서버에서 가져오는 부분 제거
 
         // kakao 검색 결과 title 기준으로 우선순위 매기기
         const placePriority = new Map<string, number>();
@@ -196,7 +180,7 @@ export default function HotRestaurantsPage() {
 
       <div className="mt-4 grid grid-cols-2 gap-y-6 gap-x-4">
         {items.map((it) => (
-          <CardItem key={it.id} item={it} setItems={setItems} />
+          <CardItem key={it.id} item={it} />
         ))}
       </div>
 
