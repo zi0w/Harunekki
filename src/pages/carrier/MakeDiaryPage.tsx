@@ -4,9 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { loadKakaoMapScript } from '@/lib/kakao/loadKakaoMap';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
-import { createDiaryWithPlaces } from '@/lib/supabase/diaries';
-import { supabase } from '@/lib/supabase/supabase';
-import { ensureUserExists } from '@/lib/supabase/likes';
 import pinRed from '@/assets/icons/carrier/map_pin_RD.svg';
 import pinYellow from '@/assets/icons/carrier/map_pin_YE.svg';
 import pinGreen from '@/assets/icons/carrier/map_pin_GR.svg';
@@ -37,7 +34,6 @@ export default function MakeDiaryPage() {
     stores: {
       id: string;
       title: string;
-      type: 'restaurant' | 'food';
       img?: string;
       location?: string;
       mapx?: number;
@@ -54,7 +50,6 @@ export default function MakeDiaryPage() {
   type Store = {
     id: string;
     title: string;
-    type: 'restaurant' | 'food';
     img?: string;
     location?: string;
     mapx?: number;
@@ -65,7 +60,6 @@ export default function MakeDiaryPage() {
   const [days, setDays] = useState<{ [key: string]: Store[] }>(() => {
     if (!state) return {};
     const [startDate, endDate] = state.dateRange;
-
 
     const dayCount =
       Math.floor(
@@ -283,10 +277,8 @@ export default function MakeDiaryPage() {
         </div>
       </div>
 
-
       {/* 중간 드래그 영역 */}
       <div className="flex-1 overflow-y-auto mt-5">
-
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="space-y-6 pb-4">
             {Object.entries(days).map(([dayId, items], i) => (
@@ -348,7 +340,6 @@ export default function MakeDiaryPage() {
           </div>
         </DragDropContext>
 
-
         {/* 하단 확정 버튼 */}
         <div className="shrink-0 pb-6 pt-2 border-t">
           <button
@@ -363,7 +354,6 @@ export default function MakeDiaryPage() {
             여행지 확정하기
           </button>
         </div>
-
       </div>
     </div>
   );
