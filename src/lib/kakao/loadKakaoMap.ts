@@ -11,7 +11,6 @@ export const loadKakaoMapScript = (apiKey: string): Promise<void> => {
 
     script.onload = () => {
       window.kakao.maps.load(() => {
-        console.log('✅ Kakao Map SDK loaded');
         resolve();
       });
     };

@@ -67,12 +67,6 @@ export default function MyBadges() {
           // 모든 스탬프가 완성된 다이어리만 뱃지로 추가
           if (totalPlaces > 0 && completedPlaces === totalPlaces) {
             // 저장된 지역명 사용 (캐리어에서 설정한 지역명)
-            console.log(
-              '다이어리 ID:',
-              diary.id,
-              'region_name:',
-              diary.region_name,
-            );
             const regionName = diary.region_name?.trim() || '국내 여행';
 
             completedBadges.push({

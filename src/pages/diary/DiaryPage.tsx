@@ -115,7 +115,6 @@ const DiaryPage = () => {
                 className="w-full h-full object-cover"
                 loading="lazy"
                 onError={(e) => {
-                  console.log('Image load error for:', diary.cover_image);
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove(
                     'hidden',
