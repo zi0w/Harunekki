@@ -1,6 +1,6 @@
 // src/pages/foods/SeasonalFoodDetailPage.tsx
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import ArrowLocation from '@/assets/icons/home/location.svg';
 import { useEnhancedDescription } from '@/hooks/useEnhancedDescription';
 
@@ -21,8 +21,6 @@ export default function SeasonalFoodDetailPage() {
     state?: { item?: Partial<DetailModel> };
   };
   const seed = state?.item;
-
-  const navigate = useNavigate();
 
   const [detail, setDetail] = useState<DetailModel | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

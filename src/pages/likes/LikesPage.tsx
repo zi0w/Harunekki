@@ -37,7 +37,7 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
   useEffect(() => {
     ensureUserExists()
       .then(() => {
-        supabase.auth.getUser().then(({ data }) => {});
+        supabase.auth.getUser();
       })
       .catch((err) => {
         console.error('유저 등록 실패:', err.message);
@@ -85,13 +85,7 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
               type: item.type === 'restaurant' ? 'poi' : item.type, // 타입 변환
             };
 
-            return (
-              <CardItem
-                key={`${item.type}_${item.id}`}
-                item={cardItem}
-                setItems={() => {}}
-              />
-            );
+            return <CardItem key={`${item.type}_${item.id}`} item={cardItem} />;
           })}
         </div>
       )}

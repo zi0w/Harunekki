@@ -163,7 +163,7 @@ export default function SearchPage() {
 
       <div className="mt-4 grid grid-cols-2 gap-y-6 gap-x-4">
         {items.map((it) => (
-          <CardItem key={it.id} item={it} setItems={setItems} />
+          <CardItem key={it.id} item={it} />
         ))}
       </div>
 
