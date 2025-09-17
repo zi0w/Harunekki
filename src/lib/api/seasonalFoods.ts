@@ -102,9 +102,12 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       return [];
     }
 
+    console.log('🔑 API 키:', apiKey.substring(0, 10) + '...');
+
     // CORS 프록시 사용 (codetabs)
     const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
-    const targetUrl = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003&schText=&schArea=&schAreaCode=`;
+    // 올바른 API 경로 사용
+    const targetUrl = `http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst?apikey=${apiKey}&schType=B&tema_ctg01=TM003&numOfRows=10`;
 
     console.log('🌐 요청 URL:', proxyUrl + encodeURIComponent(targetUrl));
 
