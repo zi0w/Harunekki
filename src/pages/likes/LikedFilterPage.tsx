@@ -71,7 +71,7 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
 
       <div className="mt-6 space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span>제철 음식 식당 보기</span>
+          <span className="text-[#383D48]">제철 음식 식당 보기</span>
           <input
             type="checkbox"
             className="form-checkbox"
@@ -80,7 +80,7 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
           />
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span>지역 특산물 식당 보기</span>
+          <span className="text-[#383D48]">지역 특산물 식당 보기</span>
           <input
             type="checkbox"
             className="form-checkbox"

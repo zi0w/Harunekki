@@ -60,7 +60,7 @@ export default function SearchFilterHeader({
                   handleSearch();
                 }
               }}
-              className="bg-transparent text-sm flex-1 outline-none"
+              className="bg-transparent text-sm text-[#383D48] flex-1 outline-none"
             />
           </div>
 
