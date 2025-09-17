@@ -102,7 +102,7 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
 
     const url = new URL(
       '/nongsaro/service/nvpcFdCkry/fdNmLst',
-      window.location.origin,
+      'https://apis.data.go.kr',
     );
     url.search = new URLSearchParams({
       apiKey: apiKey,
