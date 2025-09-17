@@ -58,10 +58,22 @@ export async function ensureUserExists() {
   } = await supabase.auth.getUser();
   if (userError || !user) throw userError ?? new Error('No user');
 
-  const { error: insertError } = await supabase.from('users').upsert({
-    id: user.id,
-  });
-  if (insertError) throw insertError;
+  // 기존 유저가 있는지 확인
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!existingUser) {
+    // 새 유저인 경우에만 insert (소셜 로그인 시 name 포함, 이메일 로그인 시 null)
+    const { error: insertError } = await supabase.from('users').insert({
+      id: user.id,
+      name: user.user_metadata?.name ?? null,
+    });
+    if (insertError) throw insertError;
+  }
+  // 기존 유저가 있으면 아무것도 하지 않음 (기존 데이터 보존)
 }
 
 /** ✅ 음식 + 식당 좋아요 전체 가져오기 */

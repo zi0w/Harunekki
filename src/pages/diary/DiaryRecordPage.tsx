@@ -1,9 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
-import seasonalThumbnail from '@/assets/icons/seasonal/Thumbnail.webp';
+import seasonalThumbnail from '@/assets/icons/diary/camera.png';
 import BadgeModal from '@/components/shared/BadgeModal';
-import { extractRegionName } from '@/utils/regionUtils';
 import { setDiaryCoverImage } from '@/lib/supabase/diaries';
 
 type DiaryPlace = {
@@ -197,25 +196,15 @@ const DiaryRecordPage = () => {
 
         // 모든 스탬프가 완성된 경우 뱃지 완성 알림
         if (totalPlaces > 0 && completedPlaces === totalPlaces) {
-          // 지역명 추출 로직
+          // 저장된 지역명 사용 (캐리어에서 설정한 지역명)
           const { data: diaryData } = await supabase
             .from('diaries')
-            .select(
-              `
-              title,
-              diary_places!inner(place_name)
-            `,
-            )
+            .select('region_name')
             .eq('id', diaryId)
             .single();
 
           if (diaryData) {
-            const places = diaryData.diary_places;
-            const placeNames = places.map(
-              (place: { place_name: string }) => place.place_name,
-            );
-
-            const regionName = extractRegionName(placeNames);
+            const regionName = diaryData.region_name?.trim() || '국내 여행';
 
             // 뱃지 모달 표시
             setBadgeData({

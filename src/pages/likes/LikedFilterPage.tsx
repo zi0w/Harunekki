@@ -57,10 +57,10 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
         {CATEGORY.map((cat) => (
           <button
             key={cat}
-            className={`rounded-lg py-2 text-sm font-medium border ${
+            className={`rounded-lg py-2 text-sm font-medium border bg-white focus:bg-white active:bg-white hover:bg-white ${
               filter.categories.includes(cat)
-                ? 'bg-[#FEEFEF] text-[#EF6F6F] border-[#EF6F6F]'
-                : 'bg-white text-[#8A8A8A] border-[#E0E0E0]'
+                ? 'text-[#EF6F6F] '
+                : 'text-[#8A8A8A] '
             }`}
             onClick={() => toggleCategory(cat)}
           >
@@ -71,7 +71,7 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
 
       <div className="mt-6 space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span>제철 음식 식당 보기</span>
+          <span className="text-[#383D48]">제철 음식 식당 보기</span>
           <input
             type="checkbox"
             className="form-checkbox"
@@ -80,7 +80,7 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
           />
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span>지역 특산물 식당 보기</span>
+          <span className="text-[#383D48]">지역 특산물 식당 보기</span>
           <input
             type="checkbox"
             className="form-checkbox"

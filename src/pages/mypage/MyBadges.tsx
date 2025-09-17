@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
-import { extractRegionName } from '@/utils/regionUtils';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { updateDiaryRegionNames } from '@/lib/supabase/diaries';
 
 type Badge = {
   id: string;
@@ -24,6 +24,13 @@ export default function MyBadges() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
+      // 기존 다이어리들의 region_name 업데이트 (한 번만 실행)
+      try {
+        await updateDiaryRegionNames(user.id);
+      } catch (error) {
+        console.error('기존 다이어리 지역명 업데이트 실패:', error);
+      }
+
       // 완성된 다이어리에서 뱃지 정보 가져오기
       const { data: diaries } = await supabase
         .from('diaries')
@@ -33,6 +40,7 @@ export default function MyBadges() {
           title,
           start_date,
           end_date,
+          region_name,
           diary_places!inner(
             id,
             place_name,
@@ -58,11 +66,14 @@ export default function MyBadges() {
 
           // 모든 스탬프가 완성된 다이어리만 뱃지로 추가
           if (totalPlaces > 0 && completedPlaces === totalPlaces) {
-            // 지역명 추출
-            const placeNames = places.map(
-              (place: { place_name: string }) => place.place_name,
+            // 저장된 지역명 사용 (캐리어에서 설정한 지역명)
+            console.log(
+              '다이어리 ID:',
+              diary.id,
+              'region_name:',
+              diary.region_name,
             );
-            const regionName = extractRegionName(placeNames);
+            const regionName = diary.region_name?.trim() || '국내 여행';
 
             completedBadges.push({
               id: diary.id,

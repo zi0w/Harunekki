@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ArrowLocation from '@/assets/icons/home/location.svg';
-import LikeLocation from '@/assets/icons/home/heart.svg';
 import HeartIcon from '@/assets/icons/like/heart.svg';
 import HeartFilledIcon from '@/assets/icons/like/heartClicked.svg';
 import { supabase } from '@/lib/supabase/supabase';
@@ -100,9 +99,34 @@ const RestaurantDetailPage = () => {
     setIsTogglingLike(true);
 
     try {
-      const { liked, likeCount } = await toggleLike(detail.id);
-      setDetail((prev) => (prev ? { ...prev, liked, likeCount } : null));
+      // 1) 낙관적 UI 업데이트 (랜덤 좋아요 수 기준으로 +1/-1)
+      const newLiked = !detail.liked;
+      const newLikeCount = Math.max(
+        0,
+        detail.likeCount + (detail.liked ? -1 : 1),
+      );
+
+      setDetail((prev) =>
+        prev ? { ...prev, liked: newLiked, likeCount: newLikeCount } : null,
+      );
+
+      // 2) 서버 토글 (실제 좋아요 상태만 저장)
+      const { liked } = await toggleLike(detail.id);
+
+      // 3) 서버 결과 반영 (좋아요 상태만 업데이트, 좋아요 수는 랜덤 값 유지)
+      setDetail((prev) => (prev ? { ...prev, liked } : null));
     } catch (err) {
+      // 실패 시 UI 롤백
+      setDetail((prev) =>
+        prev
+          ? {
+              ...prev,
+              liked: !prev.liked,
+              likeCount: Math.max(0, prev.likeCount + (prev.liked ? 1 : -1)),
+            }
+          : null,
+      );
+
       alert(
         err instanceof Error
           ? err.message
@@ -146,15 +170,8 @@ const RestaurantDetailPage = () => {
             </p>
           </div>
 
-          {/* 좋아요 버튼과 조회수 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <img src={LikeLocation} className="w-4 h-4" alt="" />
-              <p className="text-[#596072] font-kakaoSmall text-[14px]">
-                {detail?.views?.toLocaleString() || '0'}명이 봤어요
-              </p>
-            </div>
-
+          {/* 좋아요 버튼 */}
+          <div className="flex items-center justify-end">
             <button
               onClick={handleToggleLike}
               disabled={isTogglingLike}

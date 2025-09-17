@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase/supabase';
 import stampIcon from '@/assets/icons/diary/Stamp.png';
 import badgeIcon from '@/assets/icons/diary/Badge.png';
 import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
-import { extractRegionName } from '@/utils/regionUtils';
 import { deleteDiary } from '@/lib/supabase/diaries';
 import Modal from '@/components/common/Modal';
 
@@ -26,6 +25,7 @@ type Diary = {
   title: string;
   start_date: string;
   end_date: string;
+  region_name?: string;
 };
 
 const DiaryDetailPage = () => {
@@ -187,8 +187,8 @@ const DiaryDetailPage = () => {
   ).length;
   const isBadgeComplete = totalPlaces > 0 && completedPlaces === totalPlaces;
 
-  // 지역명 추출
-  const regionName = extractRegionName(places.map((place) => place.place_name));
+  // 저장된 지역명 사용 (캐리어에서 설정한 지역명)
+  const regionName = diary.region_name?.trim() || '국내 여행';
 
   // 다이어리 삭제 함수
   const handleDeleteDiary = async () => {

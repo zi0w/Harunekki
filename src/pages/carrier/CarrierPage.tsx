@@ -13,6 +13,7 @@ import {
 import type { LikedItem } from '@/types/LikedItem';
 import LocationIcon from '@/assets/icons/home/location.svg';
 import LikeIcon from '@/assets/icons/home/heart.svg';
+import Modal from '@/components/common/Modal';
 
 export default function CarrierPage() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function CarrierPage() {
   );
   const [filterRecommendedOnly, setFilterRecommendedOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   // ✅ 지역명 추출 함수 (내부 정의)
   function extractRegionFromLocation(location: string): string {
@@ -90,11 +92,26 @@ export default function CarrierPage() {
         }
         setGroupedStores(regionMap);
 
-        const mostLikedRegion = Object.entries(regionMap).reduce(
-          (max, entry) => (entry[1].length > max[1].length ? entry : max),
-          ['', [] as LikedItem[]],
-        )[0];
-        setRecommendedRegion(mostLikedRegion);
+        // 강원도가 있으면 우선 추천, 없으면 가장 많은 좋아요 지역 추천
+        const preferredRegions = ['강원', '서울', '경기', '부산', '제주'];
+        let recommendedRegion = '';
+
+        for (const region of preferredRegions) {
+          if (regionMap[region] && regionMap[region].length > 0) {
+            recommendedRegion = region;
+            break;
+          }
+        }
+
+        // 선호 지역에 없으면 가장 많은 좋아요 지역으로
+        if (!recommendedRegion) {
+          recommendedRegion = Object.entries(regionMap).reduce(
+            (max, entry) => (entry[1].length > max[1].length ? entry : max),
+            ['', [] as LikedItem[]],
+          )[0];
+        }
+
+        setRecommendedRegion(recommendedRegion);
       } catch (err) {
         console.error('좋아요 항목 불러오기 실패:', err);
       } finally {
@@ -119,11 +136,26 @@ export default function CarrierPage() {
     }
     setGroupedStores(regionMap);
 
-    const mostLikedRegion = Object.entries(regionMap).reduce(
-      (max, entry) => (entry[1].length > max[1].length ? entry : max),
-      ['', [] as LikedItem[]],
-    )[0];
-    setRecommendedRegion(mostLikedRegion);
+    // 강원도가 있으면 우선 추천, 없으면 가장 많은 좋아요 지역 추천
+    const preferredRegions = ['강원', '서울', '경기', '부산', '제주'];
+    let recommendedRegion = '';
+
+    for (const region of preferredRegions) {
+      if (regionMap[region] && regionMap[region].length > 0) {
+        recommendedRegion = region;
+        break;
+      }
+    }
+
+    // 선호 지역에 없으면 가장 많은 좋아요 지역으로
+    if (!recommendedRegion) {
+      recommendedRegion = Object.entries(regionMap).reduce(
+        (max, entry) => (entry[1].length > max[1].length ? entry : max),
+        ['', [] as LikedItem[]],
+      )[0];
+    }
+
+    setRecommendedRegion(recommendedRegion);
   };
   async function fetchExistingPoiIds(ids: string[]): Promise<Set<string>> {
     const { data, error } = await supabase
@@ -141,12 +173,9 @@ export default function CarrierPage() {
 
   const handleConfirm = async () => {
     if (!title || !dateRange) {
-      alert('다이어리 제목과 여행 일정을 입력해주세요.');
+      setShowValidationModal(true);
       return;
     }
-
-    const confirmed = window.confirm('여행지를 확정하시겠어요?');
-    if (!confirmed) return;
 
     const {
       data: { user },
@@ -197,16 +226,36 @@ export default function CarrierPage() {
         };
       });
 
-      // 5️⃣ Supabase에 저장
+      // 5️⃣ 실제 장소들의 지역 확인하여 regionName 결정
+      const actualRegions = new Set<string>();
+      for (const store of storesWithCoords) {
+        const region = extractRegionFromLocation(store.location ?? '');
+        if (region && region !== '기타') {
+          actualRegions.add(region);
+        }
+      }
+
+      let regionName: string;
+      if (actualRegions.size === 0) {
+        regionName = '국내 여행';
+      } else if (actualRegions.size === 1) {
+        const singleRegion = Array.from(actualRegions)[0];
+        regionName = singleRegion === '강원' ? '강원특별자치도' : singleRegion;
+      } else {
+        regionName = '국내 여행';
+      }
+
+      // 6️⃣ Supabase에 저장
       const diary = await createDiaryWithPlaces({
         userId: user.id,
         title,
         startDate: dateRange[0].toISOString().slice(0, 10),
         endDate: dateRange[1].toISOString().slice(0, 10),
         stores: storesWithCoords,
+        regionName,
       });
 
-      // 6️⃣ MakeDiaryPage로 이동 + 좌표 포함된 stores 넘김
+      // 7️⃣ MakeDiaryPage로 이동 + 좌표 포함된 stores 넘김
       navigate('/carrier/makediary', {
         state: {
           diaryId: diary.id,
@@ -275,7 +324,7 @@ export default function CarrierPage() {
             />
             <button
               onClick={() => setCalendarOpen(false)}
-              className="mt-2 w-full bg-gray-200 py-2 rounded-lg"
+              className="mt-2 w-full bg-[#EF6F6F] py-2 rounded-lg"
             >
               닫기
             </button>
@@ -286,12 +335,15 @@ export default function CarrierPage() {
       {/* 추천 UI */}
       {recommendedRegion && (
         <div className="mt-6 p-4 rounded-xl bg-[#FDFDFE] border border-[#EF6F6F] shadow">
-          <p className="text-[#EF6F6F] text-sm font-semibold mb-1">
-            🧭 추천 여행지
-          </p>
+          <p className="text-[#EF6F6F] text-sm font-bold mb-1">추천 여행지</p>
           <p className="text-left text-[#383D48] text-base font-bold">
-            {getPostposition(recommendedRegion, ['으로', '로'])} 여행을 떠나보는
-            건 어떨까요?
+            {getPostposition(
+              recommendedRegion === '강원'
+                ? '강원특별자치도'
+                : recommendedRegion,
+              ['으로', '로'],
+            )}{' '}
+            여행을 떠나보는 건 어떨까요?
           </p>
           <button
             className="mt-2 text-sm p-0 text-[#EF6F6F] underline text-[0.875rem] flex items-center truncate"
@@ -299,7 +351,7 @@ export default function CarrierPage() {
           >
             {filterRecommendedOnly
               ? '전체 지역 보기'
-              : `${recommendedRegion}만 보기`}
+              : `${recommendedRegion === '강원' ? '강원특별자치도' : recommendedRegion}만 보기`}
           </button>
         </div>
       )}
@@ -311,7 +363,7 @@ export default function CarrierPage() {
         탐색하러 가기
       </button>
 
-      <div className="mt-6 flex-1 overflow-y-auto">
+      <div className="mt-6 flex-1 overflow-y-auto scrollbar-hide">
         {loading ? (
           <p className="text-center text-sm text-gray-400">불러오는 중...</p>
         ) : stores.length === 0 ? (
@@ -382,6 +434,16 @@ export default function CarrierPage() {
           </button>
         </div>
       </div>
+
+      {/* 검증 모달 */}
+      <Modal
+        open={showValidationModal}
+        title="입력 정보 확인"
+        description="다이어리 제목과 여행 일정을 입력해주세요."
+        confirmText="확인"
+        onConfirm={() => setShowValidationModal(false)}
+        onClose={() => setShowValidationModal(false)}
+      />
     </div>
   );
 }
