@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import cameraIcon from '@/assets/icons/diary/camera.png';
 import BadgeModal from '@/components/shared/BadgeModal';
 import { extractRegionName } from '@/utils/regionUtils';
+import { setDiaryCoverImage } from '@/lib/supabase/diaries';
 
 type DiaryPlace = {
   id: string;
@@ -41,6 +42,24 @@ const DiaryRecordPage = () => {
   const [badgeData, setBadgeData] = useState<{
     regionName: string;
   } | null>(null);
+  const [isCoverImage, setIsCoverImage] = useState(false);
+  const [settingCover, setSettingCover] = useState(false);
+
+  // 커버 이미지 설정 함수
+  const handleSetCoverImage = async () => {
+    if (!diaryId || !imagePreview) return;
+
+    setSettingCover(true);
+    try {
+      await setDiaryCoverImage(diaryId, imagePreview);
+      setIsCoverImage(true);
+    } catch (error) {
+      console.error('커버 이미지 설정 실패:', error);
+      alert('커버 이미지 설정 중 오류가 발생했습니다.');
+    } finally {
+      setSettingCover(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPlaceData = async () => {
@@ -254,8 +273,10 @@ const DiaryRecordPage = () => {
       {/* 이미지 업로드 */}
       <div className="w-full">
         <div
-          className="w-full aspect-square bg-gray-100 rounded-lg shadow-md flex items-center justify-center cursor-pointer hover:shadow-lg transition-all duration-200"
-          onClick={() => fileInputRef.current?.click()}
+          className={`w-full aspect-square bg-gray-100 rounded-lg shadow-md flex items-center justify-center transition-all duration-200 ${
+            isCoverImage ? 'cursor-default' : 'cursor-pointer hover:shadow-lg'
+          }`}
+          onClick={() => !isCoverImage && fileInputRef.current?.click()}
         >
           {imagePreview ? (
             <div className="relative w-full h-full">
@@ -264,11 +285,18 @@ const DiaryRecordPage = () => {
                 alt="업로드된 이미지"
                 className="w-full h-full object-cover rounded-lg"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-kakaoSmall opacity-0 hover:opacity-100 transition-opacity duration-200">
-                  탭하면 이미지 수정
-                </span>
-              </div>
+              {!isCoverImage && (
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm font-kakaoSmall opacity-0 hover:opacity-100 transition-opacity duration-200">
+                    탭하면 이미지 수정
+                  </span>
+                </div>
+              )}
+              {isCoverImage && (
+                <div className="absolute top-2 right-2 bg-[#EF6F6F] text-white px-2 py-1 rounded-full text-xs font-kakaoSmall">
+                  커버 이미지
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center">
@@ -287,6 +315,26 @@ const DiaryRecordPage = () => {
           onChange={handleImageChange}
           className="hidden"
         />
+
+        {/* 커버 이미지 설정 버튼 */}
+        {imagePreview && !isCoverImage && (
+          <div className="mt-3">
+            <button
+              onClick={handleSetCoverImage}
+              disabled={settingCover}
+              className="w-full py-2 px-4 bg-[#EF6F6F] text-white rounded-lg font-medium hover:bg-[#E55A5A] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {settingCover ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  등록 중입니다...
+                </>
+              ) : (
+                '위 이미지를 다이어리 커버로 설정'
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 여행지 기록 */}

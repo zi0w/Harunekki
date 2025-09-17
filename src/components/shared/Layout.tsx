@@ -174,6 +174,10 @@ const Layout = () => {
               variant="back"
               title={diaryTitle}
               backTo="/diary"
+              rightSlot={
+                (window as unknown as { diarySettingsButton?: React.ReactNode })
+                  .diarySettingsButton
+              }
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}
@@ -208,7 +212,7 @@ const Layout = () => {
           ) : isCarrier ? (
             <HeaderBar
               variant="back"
-              title="여행지 다이어리"
+              title="나의 캐리어"
               backTo="/"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
@@ -217,7 +221,7 @@ const Layout = () => {
           ) : isCarrierMakeDiary ? (
             <HeaderBar
               variant="back"
-              title="여행지 다이어리"
+              title="나의 캐리어"
               backTo="/carrier"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
