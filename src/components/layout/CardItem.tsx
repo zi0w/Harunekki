@@ -33,7 +33,11 @@ export default function CardItem({
 
   return (
     <Link
-      to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
+      to={
+        item.isSeasonal
+          ? `/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`
+          : `/restaurants/detail?id=${encodeURIComponent(item.id)}`
+      }
       state={{ item }}
       className="block relative rounded-2xl"
     >

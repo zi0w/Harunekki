@@ -21,6 +21,7 @@ const Layout = () => {
 
   //인기 식당 페이지
   const isHotRestaurants = pathname.startsWith('/restaurants/hot');
+  const isRestaurantDetail = pathname.startsWith('/restaurants/detail');
   //검색 페이지
   const isSearch = pathname.startsWith('/search');
   // const isSearchFilter = pathname.startsWith('/search/filter');
@@ -175,6 +176,15 @@ const Layout = () => {
               variant="back"
               title="지금 가장 인기있는 식당"
               backTo="/"
+              heightClassName="h-[40px]"
+              bgClassName="bg-[#F9FAFB]"
+              withBorder={true}
+            />
+          ) : isRestaurantDetail ? (
+            <HeaderBar
+              variant="back"
+              title="식당 상세"
+              backTo="/restaurants/hot"
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}

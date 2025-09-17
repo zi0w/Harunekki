@@ -18,6 +18,7 @@ import MyInfoEdit from '@/pages/mypage/MyInfoEdit';
 import MyPage from '@/pages/mypage/MyPage';
 import RecommendPage from '@/pages/recommend/RecommendPage';
 import HotRestaurantsPage from '@/pages/restaurants/HotRestaurantsPage';
+import RestaurantDetailPage from '@/pages/restaurants/RestaurantDetailPage';
 import SearchPage from '@/pages/search/SearchPage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LikedFilterPage from '@/pages/likes/LikedFilterPage';
@@ -57,6 +58,10 @@ const Router = () => {
             element={<SeasonalFoodDetailPage />}
           />
           <Route path="/restaurants/hot" element={<HotRestaurantsPage />} />
+          <Route
+            path="/restaurants/detail"
+            element={<RestaurantDetailPage />}
+          />
           <Route path="/recommend" element={<RecommendPage />} />
           <Route path="/event" element={<EventPage />} />
           <Route path="search" element={<SearchPage />} />

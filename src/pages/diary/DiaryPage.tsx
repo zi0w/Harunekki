@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import diaryIcon from '@/assets/icons/diary/Calander@4x.png';
-import cameraIcon from '@/assets/icons/diary/camera.png';
+import seasonalThumbnail from '@/assets/icons/seasonal/Thumbnail.webp';
 
 type Diary = {
   id: string;
@@ -127,7 +127,7 @@ const DiaryPage = () => {
               className={`w-full h-full bg-[#e9ecf1] flex items-center justify-center ${diary.cover_image ? 'hidden' : ''}`}
             >
               <img
-                src={cameraIcon}
+                src={seasonalThumbnail}
                 alt="다이어리"
                 className="w-12 h-12 opacity-50"
               />
