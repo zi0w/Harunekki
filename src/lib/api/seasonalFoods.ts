@@ -91,23 +91,20 @@ export const getImageUrl = (item: any): string => {
 //   }
 //
 
-// 농촌진흥청 시절식 API 호출 함수 (Supabase Edge Function 사용)
+// 농촌진흥청 시절식 API 호출 함수 (CORS 프록시 사용)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase 환경변수가 설정되지 않았습니다.');
+    const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
+    if (!apiKey) {
+      console.error('NONGSARO_API_KEY가 설정되지 않았습니다.');
       return [];
     }
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`, {
-      headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // CORS 프록시 사용 (allorigins)
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003`;
+    
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
