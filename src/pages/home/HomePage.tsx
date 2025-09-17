@@ -16,6 +16,7 @@ type Food = {
   views: number;
   img: string;
   likeCount: number;
+  isSeasonal?: boolean;
 };
 
 function mapToFood(it: ListItem): Food {
@@ -45,7 +46,11 @@ const SectionHeader = ({ title, to }: { title: string; to?: string }) => (
 );
 
 const ChipRowCard = ({ item }: { item: Food }) => (
-  <div className="inline-flex flex-col w-[104px] mr-4 shrink-0">
+  <Link
+    to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
+    state={{ item }}
+    className="inline-flex flex-col w-[104px] mr-4 shrink-0"
+  >
     <div className="w-[6.25rem] h-[6.25rem] rounded-xl overflow-hidden bg-gray-200">
       {item.img ? (
         <img
@@ -69,12 +74,12 @@ const ChipRowCard = ({ item }: { item: Food }) => (
           : item.location}
       </p>
     </div>
-  </div>
+  </Link>
 );
 
 const RestaurantCard = ({ item }: { item: Food }) => (
   <Link
-    to={`/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`}
+    to={`/restaurants/detail?id=${encodeURIComponent(item.id)}`}
     state={{ item }}
     aria-label={item.title}
     className="block relative rounded-2xl"
@@ -139,6 +144,7 @@ const HomePage = () => {
           img: card.img,
           views: Math.floor(Math.random() * 3000) + 300,
           likeCount: 0,
+          isSeasonal: true, // 제철 음식 플래그 추가
         }));
 
         // 최대 12개까지만 표시

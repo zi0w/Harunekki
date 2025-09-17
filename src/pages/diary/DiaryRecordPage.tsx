@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
-import cameraIcon from '@/assets/icons/diary/camera.png';
+import seasonalThumbnail from '@/assets/icons/seasonal/Thumbnail.webp';
 import BadgeModal from '@/components/shared/BadgeModal';
 import { extractRegionName } from '@/utils/regionUtils';
 import { setDiaryCoverImage } from '@/lib/supabase/diaries';
@@ -301,7 +301,7 @@ const DiaryRecordPage = () => {
           ) : (
             <div className="text-center">
               <img
-                src={cameraIcon}
+                src={seasonalThumbnail}
                 alt="카메라"
                 className="w-10 h-10 mx-auto opacity-60"
               />
