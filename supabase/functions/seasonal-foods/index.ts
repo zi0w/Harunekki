@@ -30,7 +30,7 @@ serve(async (req) => {
       });
     }
 
-    const url = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003`;
+    const url = `http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst?apikey=${apiKey}&schType=B&tema_ctg01=TM003&numOfRows=10`;
 
     console.log('Fetching from:', url);
 
