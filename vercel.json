@@ -1,5 +1,3 @@
 {
-  "buildCommand": "corepack enable && yarn build",
-  "installCommand": "corepack enable && yarn install",
   "framework": "vite"
 }
