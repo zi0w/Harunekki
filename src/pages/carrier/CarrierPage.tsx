@@ -233,6 +233,8 @@ export default function CarrierPage() {
         startDate: dateRange[0].toISOString().slice(0, 10),
         endDate: dateRange[1].toISOString().slice(0, 10),
         stores: storesWithCoords,
+        regionName:
+          recommendedRegion === '강원' ? '강원특별자치도' : recommendedRegion,
       });
 
       // 6️⃣ MakeDiaryPage로 이동 + 좌표 포함된 stores 넘김
