@@ -183,7 +183,6 @@ export default function MakeDiaryPage() {
     });
   }, [days]);
 
-  // ✅ days 상태 변경될 때마다 마커 다시 그림
   useEffect(() => {
     if (!mapInstanceRef.current || !window.kakao) return;
 
