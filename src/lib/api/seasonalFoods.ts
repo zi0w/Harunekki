@@ -66,32 +66,32 @@ export const getImageUrl = (item: any): string => {
   return DEFAULT_IMAGE_URL;
 };
 
-// 설명 개선을 위한 비동기 함수
-const enhanceDescriptionsAsync = async (cards: SeasonalCard[]) => {
-  try {
-    for (const card of cards) {
-      if (
-        card.description === '제철 음식에 대한 설명을 준비 중입니다.' ||
-        !card.description ||
-        card.description.trim() === ''
-      ) {
-        const result = await enhanceSeasonalFoodDescription({
-          title: card.title,
-          originalDescription: card.description,
-          location: card.location,
-        });
+// 설명 개선을 위한 비동기 함수 (현재 사용하지 않음 - 개별 컴포넌트에서 처리)
+// const enhanceDescriptionsAsync = async (cards: SeasonalCard[]) => {
+//   try {
+//     for (const card of cards) {
+//       if (
+//         card.description === '제철 음식에 대한 설명을 준비 중입니다.' ||
+//         !card.description ||
+//         card.description.trim() === ''
+//       ) {
+//         const result = await enhanceSeasonalFoodDescription({
+//           title: card.title,
+//           originalDescription: card.description,
+//           location: card.location,
+//         });
 
-        // 설명 업데이트 (실제로는 상태 관리가 필요하지만 여기서는 로그만)
-        console.log(
-          `설명 개선 완료 - ${card.title}:`,
-          result.enhancedDescription,
-        );
-      }
-    }
-  } catch (error) {
-    console.error('설명 개선 중 오류:', error);
-  }
-};
+//         // 설명 업데이트 (실제로는 상태 관리가 필요하지만 여기서는 로그만)
+//         console.log(
+//           `설명 개선 완료 - ${card.title}:`,
+//           result.enhancedDescription,
+//         );
+//       }
+//     }
+//   } catch (error) {
+//     console.error('설명 개선 중 오류:', error);
+//   }
+// };
 
 // 농촌진흥청 시절식 API 호출 함수
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
@@ -155,8 +155,8 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
         return 0;
       });
 
-      // 설명 개선 (백그라운드에서 실행)
-      enhanceDescriptionsAsync(sortedCards);
+      // 설명 개선은 개별 컴포넌트에서 필요시에만 실행
+      // enhanceDescriptionsAsync(sortedCards);
 
       return sortedCards;
     }
