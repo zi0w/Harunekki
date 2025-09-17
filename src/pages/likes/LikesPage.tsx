@@ -20,12 +20,19 @@ interface Props {
 export default function LikedPage({ searchKeyword, filterOptions }: Props) {
   const [items, setItems] = useState<LikedItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<LikedItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllLikedItems().then((res) => {
-      console.log('불러온 좋아요 아이템:', res);
-      setItems(res);
-    });
+    fetchAllLikedItems()
+      .then((res) => {
+        console.log('불러온 좋아요 아이템:', res);
+        setItems(res);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('좋아요 아이템 로드 실패:', error);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -58,7 +65,11 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-[20.9375rem] overflow-x-hidden">
-      {filteredItems.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EF6F6F]"></div>
+        </div>
+      ) : filteredItems.length === 0 ? (
         <div className="mt-10 text-center text-sm text-[#8A8A8A]">
           좋아요한 항목이 없습니다.
         </div>
