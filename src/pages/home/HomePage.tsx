@@ -26,7 +26,7 @@ function mapToFood(it: ListItem): Food {
     location: it.addr1 ?? '주소 정보 없음',
     img: it.firstimage || it.firstimage2 || '',
     views: Math.floor(Math.random() * 3000) + 300,
-    likeCount: 0,
+    likeCount: Math.floor(Math.random() * 500) + 50, // 랜덤 좋아요 수 (50-549)
   };
 }
 
@@ -110,7 +110,7 @@ const RestaurantCard = ({ item }: { item: Food }) => (
       <div className="flex items-center gap-1 mt-1">
         <img src={LikeLocation} className="w-4 h-4" alt="" />
         <p className="text-[#596072] font-kakaoSmall text-[14px]">
-          {(item.likeCount ?? 0).toLocaleString()}
+          {item.likeCount.toLocaleString()}
         </p>
       </div>
     </div>
@@ -143,7 +143,7 @@ const HomePage = () => {
           location: card.location,
           img: card.img,
           views: Math.floor(Math.random() * 3000) + 300,
-          likeCount: 0,
+          likeCount: Math.floor(Math.random() * 200) + 20, // 랜덤 좋아요 수 (20-219)
           isSeasonal: true, // 제철 음식 플래그 추가
         }));
 
