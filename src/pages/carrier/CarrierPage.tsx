@@ -92,11 +92,26 @@ export default function CarrierPage() {
         }
         setGroupedStores(regionMap);
 
-        const mostLikedRegion = Object.entries(regionMap).reduce(
-          (max, entry) => (entry[1].length > max[1].length ? entry : max),
-          ['', [] as LikedItem[]],
-        )[0];
-        setRecommendedRegion(mostLikedRegion);
+        // 강원도가 있으면 우선 추천, 없으면 가장 많은 좋아요 지역 추천
+        const preferredRegions = ['강원', '서울', '경기', '부산', '제주'];
+        let recommendedRegion = '';
+
+        for (const region of preferredRegions) {
+          if (regionMap[region] && regionMap[region].length > 0) {
+            recommendedRegion = region;
+            break;
+          }
+        }
+
+        // 선호 지역에 없으면 가장 많은 좋아요 지역으로
+        if (!recommendedRegion) {
+          recommendedRegion = Object.entries(regionMap).reduce(
+            (max, entry) => (entry[1].length > max[1].length ? entry : max),
+            ['', [] as LikedItem[]],
+          )[0];
+        }
+
+        setRecommendedRegion(recommendedRegion);
       } catch (err) {
         console.error('좋아요 항목 불러오기 실패:', err);
       } finally {
@@ -121,11 +136,26 @@ export default function CarrierPage() {
     }
     setGroupedStores(regionMap);
 
-    const mostLikedRegion = Object.entries(regionMap).reduce(
-      (max, entry) => (entry[1].length > max[1].length ? entry : max),
-      ['', [] as LikedItem[]],
-    )[0];
-    setRecommendedRegion(mostLikedRegion);
+    // 강원도가 있으면 우선 추천, 없으면 가장 많은 좋아요 지역 추천
+    const preferredRegions = ['강원', '서울', '경기', '부산', '제주'];
+    let recommendedRegion = '';
+
+    for (const region of preferredRegions) {
+      if (regionMap[region] && regionMap[region].length > 0) {
+        recommendedRegion = region;
+        break;
+      }
+    }
+
+    // 선호 지역에 없으면 가장 많은 좋아요 지역으로
+    if (!recommendedRegion) {
+      recommendedRegion = Object.entries(regionMap).reduce(
+        (max, entry) => (entry[1].length > max[1].length ? entry : max),
+        ['', [] as LikedItem[]],
+      )[0];
+    }
+
+    setRecommendedRegion(recommendedRegion);
   };
   async function fetchExistingPoiIds(ids: string[]): Promise<Set<string>> {
     const { data, error } = await supabase
@@ -287,8 +317,13 @@ export default function CarrierPage() {
         <div className="mt-6 p-4 rounded-xl bg-[#FDFDFE] border border-[#EF6F6F] shadow">
           <p className="text-[#EF6F6F] text-sm font-bold mb-1">추천 여행지</p>
           <p className="text-left text-[#383D48] text-base font-bold">
-            {getPostposition(recommendedRegion, ['으로', '로'])} 여행을 떠나보는
-            건 어떨까요?
+            {getPostposition(
+              recommendedRegion === '강원'
+                ? '강원특별자치도'
+                : recommendedRegion,
+              ['으로', '로'],
+            )}{' '}
+            여행을 떠나보는 건 어떨까요?
           </p>
           <button
             className="mt-2 text-sm p-0 text-[#EF6F6F] underline text-[0.875rem] flex items-center truncate"
@@ -296,7 +331,7 @@ export default function CarrierPage() {
           >
             {filterRecommendedOnly
               ? '전체 지역 보기'
-              : `${recommendedRegion}만 보기`}
+              : `${recommendedRegion === '강원' ? '강원특별자치도' : recommendedRegion}만 보기`}
           </button>
         </div>
       )}
