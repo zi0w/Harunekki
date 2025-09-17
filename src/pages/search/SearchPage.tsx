@@ -4,14 +4,16 @@ import { fetchAreaBasedList } from '@/lib/api/tourapi';
 import CardItem, { type Card } from '@/components/layout/CardItem';
 import { fetchLikeCounts, fetchMyLiked } from '@/lib/supabase/likes';
 import { searchKakaoPlaces } from '@/lib/kakao/searchKakaoPlaces';
+import { useLocation } from 'react-router-dom';
 
 export default function SearchPage() {
-  const [activeRegion] = useState<number | undefined>(undefined);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const searchKeyword = queryParams.get('q') ?? '';
   const [items, setItems] = useState<Card[]>([]);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [searchKeyword] = useState('');
 
   const pageRef = useRef(0);
   const loadingRef = useRef(false);
@@ -30,22 +32,16 @@ export default function SearchPage() {
       if (loadingRef.current) return;
       if (!hasMoreRef.current && nextPage !== 1) return;
 
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
       setLoading(true);
       loadingRef.current = true;
       setErrMsg(null);
 
       try {
         const { items: list, total } = await fetchAreaBasedList({
-          areaCode: activeRegion,
-          contentTypeId: 39, // 음식점
+          contentTypeId: 39,
           pageNo: nextPage,
           numOfRows: 40,
-          arrange: 'Q',
-          signal: controller.signal,
+          keyword: searchKeyword || undefined,
         });
 
         const mapped: Card[] = (list || []).map((it) => ({
@@ -107,7 +103,13 @@ export default function SearchPage() {
 
         pageRef.current = nextPage;
       } catch (e: unknown) {
-        const isAbort = e instanceof DOMException && e.name === 'AbortError';
+        const isAbort =
+          (e instanceof DOMException && e.name === 'AbortError') ||
+          (typeof e === 'object' &&
+            e !== null &&
+            'code' in e &&
+            (e as { code: string }).code === 'ERR_CANCELED');
+
         if (!isAbort) {
           const msg =
             e instanceof Error ? e.message : '데이터를 불러오지 못했습니다.';
@@ -118,7 +120,7 @@ export default function SearchPage() {
         loadingRef.current = false;
       }
     },
-    [activeRegion, searchKeyword],
+    [searchKeyword],
   );
 
   useEffect(() => {
@@ -130,18 +132,7 @@ export default function SearchPage() {
     abortRef.current?.abort();
     abortRef.current = null;
     loadPage(1);
-  }, [activeRegion, loadPage]);
-
-  useEffect(() => {
-    setItems([]);
-    setErrMsg(null);
-    setHasMore(true);
-    pageRef.current = 0;
-    idSetRef.current.clear();
-    abortRef.current?.abort();
-    abortRef.current = null;
-    loadPage(1);
-  }, [searchKeyword, loadPage]); // ✅ 검색어 반영용
+  }, [searchKeyword, loadPage]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;

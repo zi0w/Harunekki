@@ -15,18 +15,19 @@ export default function SearchFilterHeader({
   searchKeyword,
   setSearchKeyword,
   backTo = '/',
-  onSearch,
 }: Props) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  // base path (likes or search 등)
   const basePath = pathname.endsWith('/filter')
     ? pathname.replace('/filter', '')
     : pathname;
 
   const isFilterPage = pathname.endsWith('/filter');
   const handleSearch = () => {
-    if (onSearch) onSearch(searchKeyword.trim());
+    const keyword = searchKeyword.trim();
+    if (!keyword) return;
+    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+    setSearchKeyword('');
   };
 
   return (
@@ -40,7 +41,14 @@ export default function SearchFilterHeader({
       rightSlot={
         <div className="flex flex-1 items-center gap-2 ml-2">
           <div className="flex items-center gap-2 rounded-full bg-[#F0F0F0] px-3 py-2 flex-1">
-            <img src={SearchIcon} className="w-full h-full" />
+            {/* 🔍 버튼화 */}
+            <button
+              onClick={handleSearch}
+              className="p-0 w-5 h-5 flex items-center justify-center bg-[#F0F0F0] "
+            >
+              <img src={SearchIcon} className="w-full h-full" alt="검색" />
+            </button>
+
             <input
               type="text"
               placeholder="음식명으로 검색해보세요."
@@ -49,12 +57,13 @@ export default function SearchFilterHeader({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  handleSearch(); //
+                  handleSearch();
                 }
               }}
               className="bg-transparent text-sm flex-1 outline-none"
             />
           </div>
+
           <button
             onClick={() => {
               navigate(isFilterPage ? basePath : `${basePath}/filter`);

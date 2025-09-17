@@ -10,7 +10,7 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 ================================ */
 const clientV2 = axios.create({
   baseURL: '/tourapi/B551011/KorService2',
-  timeout: 10000,
+  timeout: 30000,
   headers: { Accept: 'application/json' },
   params: {
     serviceKey: SERVICE_KEY,
@@ -23,7 +23,7 @@ const clientV2 = axios.create({
 
 const clientV2Detail = axios.create({
   baseURL: '/tourapi/B551011/KorService2',
-  timeout: 10000,
+  timeout: 30000,
   headers: { Accept: 'application/json' },
   validateStatus: (s) => s >= 200 && s < 300,
 });
