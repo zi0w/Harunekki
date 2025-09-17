@@ -311,7 +311,7 @@ export default function CarrierPage() {
         탐색하러 가기
       </button>
 
-      <div className="mt-6 flex-1 overflow-y-auto">
+      <div className="mt-6 flex-1 overflow-y-auto scrollbar-hide">
         {loading ? (
           <p className="text-center text-sm text-gray-400">불러오는 중...</p>
         ) : stores.length === 0 ? (

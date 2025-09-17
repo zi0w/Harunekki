@@ -278,7 +278,7 @@ export default function MakeDiaryPage() {
       </div>
 
       {/* 중간 드래그 영역 */}
-      <div className="flex-1 overflow-y-auto mt-5">
+      <div className="flex-1 overflow-y-auto scrollbar-hide mt-5">
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="space-y-6 pb-4">
             {Object.entries(days).map(([dayId, items], i) => (
