@@ -57,10 +57,10 @@ export default function LikedFilterPage({ filter, setFilter, onClose }: Props) {
         {CATEGORY.map((cat) => (
           <button
             key={cat}
-            className={`rounded-lg py-2 text-sm font-medium border ${
+            className={`rounded-lg py-2 text-sm font-medium border bg-white focus:bg-white active:bg-white hover:bg-white ${
               filter.categories.includes(cat)
-                ? 'bg-[#FEEFEF] text-[#EF6F6F] border-[#EF6F6F]'
-                : 'bg-white text-[#8A8A8A] border-[#E0E0E0]'
+                ? 'text-[#EF6F6F] '
+                : 'text-[#8A8A8A] '
             }`}
             onClick={() => toggleCategory(cat)}
           >

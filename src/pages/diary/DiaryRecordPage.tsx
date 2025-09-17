@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
-import seasonalThumbnail from '@/assets/icons/seasonal/Thumbnail.webp';
+import seasonalThumbnail from '@/assets/icons/diary/camera.png';
 import BadgeModal from '@/components/shared/BadgeModal';
 import { extractRegionName } from '@/utils/regionUtils';
 import { setDiaryCoverImage } from '@/lib/supabase/diaries';
