@@ -103,14 +103,23 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
     // CORS 프록시 사용 (codetabs)
     const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
     const targetUrl = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003`;
-    
+
     const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
     }
 
-    const data = await response.json();
+    // 응답이 XML인지 JSON인지 확인
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const xmlText = await response.text();
+      data = parseXmlToJson(xmlText);
+    }
 
     if (data?.response?.body?.items) {
       const foodCards: SeasonalCard[] = data.response.body.items.map(
