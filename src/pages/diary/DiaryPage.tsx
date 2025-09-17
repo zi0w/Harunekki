@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
 import diaryIcon from '@/assets/icons/diary/Calander@4x.png';
+import cameraIcon from '@/assets/icons/diary/camera.png';
 
 type Diary = {
   id: string;
@@ -16,58 +17,53 @@ const DiaryPage = () => {
   const [diaries, setDiaries] = useState<Diary[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDiaries = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
+  const fetchDiaries = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-        const { data, error } = await supabase
-          .from('diaries')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('diaries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching diaries:', error);
-          return;
-        }
-
-        // 기본 다이어리 커버 이미지들 (디폴트용)
-        const defaultCoverImages = [
-          'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop', // 햄버거
-          'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop', // 피자
-          'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400&h=300&fit=crop', // 샐러드
-          'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop', // 파스타
-          'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop', // 치킨
-          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop', // 샌드위치
-        ];
-
-        // 각 다이어리의 커버 이미지 결정
-        const diariesWithCover = (data || []).map((diary, index) => {
-          // 1순위: 테이블에 저장된 cover_image
-          // 2순위: 기본 디폴트 이미지
-          const coverImage =
-            diary.cover_image ||
-            defaultCoverImages[index % defaultCoverImages.length];
-
-          return {
-            ...diary,
-            cover_image: coverImage,
-          };
-        });
-
-        setDiaries(diariesWithCover);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('Error fetching diaries:', error);
+        return;
       }
+
+      // 기본 다이어리 커버 이미지들 (디폴트용)
+      // 각 다이어리의 커버 이미지 결정 (사용자가 설정한 이미지만 사용)
+      const diariesWithCover = (data || []).map((diary) => {
+        return {
+          ...diary,
+          cover_image: diary.cover_image || null, // 사용자가 설정한 이미지만 사용
+        };
+      });
+
+      setDiaries(diariesWithCover);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDiaries();
+  }, []);
+
+  // 페이지 포커스 시 다이어리 목록 새로고침
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchDiaries();
     };
 
-    fetchDiaries();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   if (loading) {
@@ -131,7 +127,7 @@ const DiaryPage = () => {
               className={`w-full h-full bg-[#e9ecf1] flex items-center justify-center ${diary.cover_image ? 'hidden' : ''}`}
             >
               <img
-                src={diaryIcon}
+                src={cameraIcon}
                 alt="다이어리"
                 className="w-12 h-12 opacity-50"
               />

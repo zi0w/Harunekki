@@ -36,44 +36,54 @@ const SPECIAL_CITIES = [
 /**
  * 장소명 배열에서 지역명을 추출합니다.
  * @param placeNames 장소명 배열
- * @returns 추출된 지역명 (추출 실패 시 '여행지' 반환)
+ * @returns 추출된 지역명 (여러 지역이 섞여있으면 '국내 여행' 반환)
  */
 export function extractRegionName(placeNames: string[]): string {
-  if (placeNames.length === 0) return '여행지';
+  if (placeNames.length === 0) return '국내 여행';
 
-  // 지역명 패턴 매칭
-  for (const pattern of REGION_PATTERNS) {
-    for (const placeName of placeNames) {
+  const foundRegions = new Set<string>();
+
+  // 모든 장소에서 지역명 패턴 매칭
+  for (const placeName of placeNames) {
+    for (const pattern of REGION_PATTERNS) {
       const match = placeName.match(pattern);
       if (match) {
         const region = match[0];
 
-        // 특별시/광역시는 그대로 반환
+        // 특별시/광역시는 그대로 저장
         if (SPECIAL_CITIES.includes(region)) {
-          return region;
+          foundRegions.add(region);
+          continue;
         }
 
-        // 도 단위는 그대로 반환
-        if (region.includes('도')) return region;
+        // 도 단위는 그대로 저장
+        if (region.includes('도')) {
+          foundRegions.add(region);
+          continue;
+        }
 
-        // 시 단위는 그대로 반환
-        if (region.includes('시')) return region;
+        // 시 단위는 그대로 저장
+        if (region.includes('시')) {
+          foundRegions.add(region);
+          continue;
+        }
 
-        // 그 외에는 도 추가
-        return region + '도';
+        // 그 외에는 도 추가해서 저장
+        foundRegions.add(region + '도');
       }
     }
   }
 
-  // 패턴 매칭 실패 시 첫 번째 장소명에서 지역 추출 시도
-  const firstPlace = placeNames[0];
-  if (firstPlace) {
-    // "지역명 + 장소명" 형태에서 지역명 추출
-    const parts = firstPlace.split(' ');
-    if (parts.length > 1) {
-      return parts[0];
-    }
+  // 지역이 하나도 발견되지 않으면 '국내 여행'
+  if (foundRegions.size === 0) {
+    return '국내 여행';
   }
 
-  return '여행지';
+  // 지역이 하나면 해당 지역 반환
+  if (foundRegions.size === 1) {
+    return Array.from(foundRegions)[0];
+  }
+
+  // 여러 지역이 섞여있으면 '국내 여행'
+  return '국내 여행';
 }
