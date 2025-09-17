@@ -8,6 +8,7 @@ import pinRed from '@/assets/icons/carrier/map_pin_RD.svg';
 import pinYellow from '@/assets/icons/carrier/map_pin_YE.svg';
 import pinGreen from '@/assets/icons/carrier/map_pin_GR.svg';
 import pinBlue from '@/assets/icons/carrier/map_pin_BL.svg';
+import Modal from '@/components/common/Modal';
 
 const pinIcons = [pinRed, pinYellow, pinGreen, pinBlue];
 
@@ -27,6 +28,7 @@ export default function MakeDiaryPage() {
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const state = (location.state ?? null) as {
     title: string;
@@ -43,7 +45,7 @@ export default function MakeDiaryPage() {
 
   console.log('넘어온 state:', state);
   console.log('넘어온 store들 좌표 확인');
-  state.stores.forEach((s) => {
+  state?.stores.forEach((s) => {
     console.log(s.title, '→', s.mapx, s.mapy);
   });
 
@@ -96,7 +98,7 @@ export default function MakeDiaryPage() {
         // 지도 중심: 첫 번째 스토어 or 서울 기본
         const firstStore = state?.stores?.find((s) => s.mapy && s.mapx);
         const center = firstStore
-          ? new kakao.maps.LatLng(firstStore.mapy, firstStore.mapx)
+          ? new kakao.maps.LatLng(firstStore.mapy!, firstStore.mapx!)
           : new kakao.maps.LatLng(37.5665, 126.978);
 
         const options = {
@@ -109,10 +111,10 @@ export default function MakeDiaryPage() {
         mapInstanceRef.current = map;
 
         // ✅ 마커 렌더링
-        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current.forEach((marker: any) => marker.setMap(null));
         markersRef.current = [];
 
-        Object.entries(days).forEach(([_, stores], index) => {
+        Object.entries(days).forEach(([, stores], index) => {
           stores.forEach((store) => {
             if (!store.mapx || !store.mapy) return;
 
@@ -151,10 +153,10 @@ export default function MakeDiaryPage() {
     const { kakao } = window;
 
     // 기존 마커 제거
-    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.forEach((marker: any) => marker.setMap(null));
     markersRef.current = [];
 
-    Object.entries(days).forEach(([_, stores], index) => {
+    Object.entries(days).forEach(([, stores], index) => {
       stores.forEach((store) => {
         if (!store.mapx || !store.mapy) return;
 
@@ -190,10 +192,10 @@ export default function MakeDiaryPage() {
     const { kakao } = window;
 
     // 기존 마커 제거
-    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.forEach((marker: any) => marker.setMap(null));
     markersRef.current = [];
 
-    Object.entries(days).forEach(([_, stores], index) => {
+    Object.entries(days).forEach(([, stores], index) => {
       stores.forEach((store) => {
         if (!store.mapx || !store.mapy) return;
 
@@ -220,7 +222,7 @@ export default function MakeDiaryPage() {
         markersRef.current.push(marker);
       });
     });
-  }, [days, mapInstanceRef.current]); // 여기에 mapInstanceRef.current 의존성 추가
+  }, [days]); // mapInstanceRef.current 의존성 제거
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -312,7 +314,9 @@ export default function MakeDiaryPage() {
                                     s.mapy,
                                     s.mapx,
                                   );
-                                  mapInstanceRef.current.setCenter(latlng);
+                                  (mapInstanceRef.current as any).setCenter(
+                                    latlng,
+                                  );
                                 }
                               }}
                             >
@@ -322,7 +326,9 @@ export default function MakeDiaryPage() {
                                 className="h-16 w-16 rounded-lg object-cover"
                               />
                               <div className="ml-3 flex-1">
-                                <p className="text-sm font-medium">{s.title}</p>
+                                <p className="text-md font-bold text-[#383D48] mb-2">
+                                  {s.title}
+                                </p>
                                 <p className="text-xs text-gray-500">
                                   {s.location}
                                 </p>
@@ -343,7 +349,7 @@ export default function MakeDiaryPage() {
         {/* 하단 확정 버튼 */}
         <div className="shrink-0 pb-6 pt-2 border-t">
           <button
-            onClick={() => navigate('/diary')}
+            onClick={() => setShowConfirmModal(true)}
             className="w-full text-white py-3 font-semibold"
             style={{
               borderRadius: '0.75rem',
@@ -355,6 +361,19 @@ export default function MakeDiaryPage() {
           </button>
         </div>
       </div>
+
+      {/* 최종 확정 모달 */}
+      <Modal
+        open={showConfirmModal}
+        title="여행지 확정"
+        description="여행지를 확정하시겠어요?"
+        confirmText="확정하기"
+        onConfirm={() => {
+          setShowConfirmModal(false);
+          navigate('/diary');
+        }}
+        onClose={() => setShowConfirmModal(false)}
+      />
     </div>
   );
 }
