@@ -94,30 +94,42 @@ export const getImageUrl = (item: any): string => {
 // 농촌진흥청 시절식 API 호출 함수 (CORS 프록시 사용)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
+    console.log('🔄 제철음식 API 호출 시작');
+    
     const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
     if (!apiKey) {
-      console.error('NONGSARO_API_KEY가 설정되지 않았습니다.');
+      console.error('❌ NONGSARO_API_KEY가 설정되지 않았습니다.');
       return [];
     }
 
     // CORS 프록시 사용 (codetabs)
     const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
     const targetUrl = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003`;
-
+    
+    console.log('🌐 요청 URL:', proxyUrl + encodeURIComponent(targetUrl));
+    
     const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
 
+    console.log('📡 응답 상태:', response.status, response.statusText);
+    
     if (!response.ok) {
+      console.error('❌ API 호출 실패:', response.status, response.statusText);
       throw new Error(`API 호출 실패: ${response.status}`);
     }
 
     // 응답이 XML인지 JSON인지 확인
     const contentType = response.headers.get('content-type');
+    console.log('📄 Content-Type:', contentType);
+    
     let data;
 
     if (contentType && contentType.includes('application/json')) {
+      console.log('📋 JSON 응답 처리');
       data = await response.json();
     } else {
+      console.log('📋 XML 응답 처리');
       const xmlText = await response.text();
+      console.log('📄 XML 응답:', xmlText.substring(0, 200) + '...');
       data = parseXmlToJson(xmlText);
     }
 
@@ -144,12 +156,14 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
         return 0;
       });
 
+      console.log('✅ 제철음식 데이터 로드 성공:', sortedCards.length, '개');
       return sortedCards;
     }
 
+    console.log('⚠️ 응답에 데이터가 없습니다:', data);
     return [];
   } catch (error) {
-    console.error('시절식 API 호출 실패:', error);
+    console.error('❌ 시절식 API 호출 실패:', error);
     return [];
   }
 };
