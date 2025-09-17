@@ -1,5 +1,3 @@
-import { enhanceSeasonalFoodDescription } from './descriptionEnhancer';
-
 // 제철 음식용 타입
 export type SeasonalCard = {
   id: string;
