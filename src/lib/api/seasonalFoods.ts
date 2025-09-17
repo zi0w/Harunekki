@@ -91,7 +91,7 @@ export const getImageUrl = (item: any): string => {
 //   } catch (error) {
 //     console.error('설명 개선 중 오류:', error);
 //   }
-// };
+//
 
 // 농촌진흥청 시절식 API 호출 함수
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {

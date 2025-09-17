@@ -44,7 +44,12 @@ export default function AuthCallback() {
         return;
       }
 
-      const completed = !!(row?.name && row?.age !== null && row?.gender);
+      const completed = !!(
+        row?.name &&
+        row?.age !== null &&
+        row?.age !== undefined &&
+        row?.gender
+      );
       nav(completed ? '/' : '/onboarding', { replace: true });
     })();
   }, [nav]);
