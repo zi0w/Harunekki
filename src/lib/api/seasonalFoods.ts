@@ -100,15 +100,11 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       return [];
     }
 
-    // CORS 프록시 사용 (cors-anywhere)
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+    // CORS 프록시 사용 (thingproxy)
+    const proxyUrl = 'https://thingproxy.freeboard.io/fetch/';
     const targetUrl = `https://apis.data.go.kr/nongsaro/service/nvpcFdCkry/fdNmLst?apiKey=${apiKey}&apiType=json&pageNo=1&numOfRows=30&schType=B&tema_ctg01=TM003`;
     
-    const response = await fetch(proxyUrl + targetUrl, {
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    });
+    const response = await fetch(proxyUrl + targetUrl);
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
