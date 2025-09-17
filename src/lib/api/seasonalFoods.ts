@@ -95,20 +95,20 @@ export const getImageUrl = (item: any): string => {
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
     console.log('🔄 제철음식 API 호출 시작 (Supabase Edge Function)');
-    
+
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    
+
     if (!supabaseUrl || !supabaseAnonKey) {
       console.error('❌ Supabase 환경변수가 설정되지 않았습니다.');
       return [];
     }
-    
+
     console.log('🌐 Supabase URL:', supabaseUrl);
-    
+
     const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`, {
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        Authorization: `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
       },
     });

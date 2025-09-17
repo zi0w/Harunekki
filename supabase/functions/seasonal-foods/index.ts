@@ -87,7 +87,7 @@ serve(async (req) => {
     // XML 응답을 텍스트로 받아서 처리
     const xmlText = await response.text();
     console.log('XML 응답:', xmlText.substring(0, 200) + '...');
-    
+
     // XML을 JSON으로 변환하는 간단한 파싱
     const data = parseXmlToJson(xmlText);
     console.log('API response received:', data);
