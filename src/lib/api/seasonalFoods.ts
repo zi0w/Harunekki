@@ -95,12 +95,19 @@ export const getImageUrl = (item: any): string => {
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) {
-      console.error('VITE_SUPABASE_URL이 설정되지 않았습니다.');
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase 환경변수가 설정되지 않았습니다.');
       return [];
     }
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`);
+    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`, {
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`API 호출 실패: ${response.status}`);
