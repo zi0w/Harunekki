@@ -113,11 +113,16 @@ function ensureJson<T>(data: unknown): T {
   if (typeof data === 'string') {
     const s = data.trim();
     if (s.startsWith('<')) {
-      throw new Error(`Non-JSON payload (XML/HTML): ${s.slice(0, 200)}`);
+      // XML/HTML 응답인 경우 더 자세한 정보를 포함한 오류 메시지
+      const isHtml =
+        s.toLowerCase().includes('<!doctype html>') ||
+        s.toLowerCase().includes('<html');
+      const errorType = isHtml ? 'HTML' : 'XML';
+      throw new Error(`Non-JSON payload (${errorType}): ${s.slice(0, 200)}`);
     }
     try {
       return JSON.parse(s) as T;
-    } catch {
+    } catch (parseError) {
       throw new Error(`String payload is not JSON: ${s.slice(0, 200)}`);
     }
   }
@@ -283,6 +288,13 @@ export async function fetchAreaBasedList({
   } catch (err) {
     console.error('[TourAPI 실패 → Supabase fallback]', err);
 
+    // ✅ HTML/XML 응답인 경우 추가 로깅
+    if (err instanceof Error && err.message.includes('Non-JSON payload')) {
+      console.warn(
+        'TourAPI가 HTML/XML 응답을 반환했습니다. API 키나 URL을 확인해주세요.',
+      );
+    }
+
     // ✅ fallback: Supabase 캐시 사용
     const { data: cached, error } = await supabase
       .from('tour_pois')
@@ -290,7 +302,12 @@ export async function fetchAreaBasedList({
       .order('updated_at', { ascending: false })
       .limit(numOfRows);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase fallback도 실패:', error);
+      throw error;
+    }
+
+    console.log(`Supabase fallback 성공: ${cached?.length ?? 0}개 항목 반환`);
     return { items: cached ?? [], total: cached?.length ?? 0 };
   }
 }
@@ -316,12 +333,27 @@ export async function fetchDetailCommon(
   } catch (err) {
     console.error(`[TourAPI detail 실패] contentId=${contentId}`, err);
 
+    // ✅ HTML/XML 응답인 경우 추가 로깅
+    if (err instanceof Error && err.message.includes('Non-JSON payload')) {
+      console.warn(
+        `TourAPI detail이 HTML/XML 응답을 반환했습니다. contentId=${contentId}`,
+      );
+    }
+
     // ✅ fallback: Supabase 캐시 조회
     const { data: cached } = await supabase
       .from('tour_pois')
       .select('contentid,title,addr1,firstimage,firstimage2,mapx,mapy')
       .eq('contentid', contentId)
       .single();
+
+    if (cached) {
+      console.log(`Supabase detail fallback 성공: contentId=${contentId}`);
+    } else {
+      console.warn(
+        `Supabase detail fallback 실패: contentId=${contentId}에 대한 캐시 없음`,
+      );
+    }
 
     return cached ?? { contentid: contentId };
   }
