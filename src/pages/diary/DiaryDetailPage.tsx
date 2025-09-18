@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
-import stampIcon from '@/assets/icons/diary/Stamp.png';
+import stampIcon from '@/assets/icons/diary/Stamp.svg';
 import badgeIcon from '@/assets/icons/diary/Badge.png';
 import badgeCompleteIcon from '@/assets/icons/diary/Badge_Complete.webp';
 import { deleteDiary } from '@/lib/supabase/diaries';

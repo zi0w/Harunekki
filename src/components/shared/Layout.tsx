@@ -184,7 +184,7 @@ const Layout = () => {
             <HeaderBar
               variant="back"
               title="식당 상세"
-              backTo="/restaurants/hot"
+              backTo={location.state?.fromLikes ? '/likes' : '/restaurants/hot'}
               heightClassName="h-[40px]"
               bgClassName="bg-[#F9FAFB]"
               withBorder={true}

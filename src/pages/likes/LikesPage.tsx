@@ -85,7 +85,13 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
               type: item.type === 'restaurant' ? 'poi' : item.type, // 타입 변환
             };
 
-            return <CardItem key={`${item.type}_${item.id}`} item={cardItem} />;
+            return (
+              <CardItem
+                key={`${item.type}_${item.id}`}
+                item={cardItem}
+                fromLikes={true}
+              />
+            );
           })}
         </div>
       )}

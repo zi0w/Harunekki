@@ -18,8 +18,10 @@ export type Card = {
 
 export default function CardItem({
   item,
+  fromLikes = false,
 }: {
   item: Card & { type?: 'food' | 'poi' };
+  fromLikes?: boolean;
 }) {
   return (
     <Link
@@ -28,7 +30,7 @@ export default function CardItem({
           ? `/foods/seasonal/detail?id=${encodeURIComponent(item.id)}`
           : `/restaurants/detail?id=${encodeURIComponent(item.id)}`
       }
-      state={{ item }}
+      state={{ item, fromLikes }}
       className="block relative rounded-2xl"
     >
       {/* 이미지 */}
