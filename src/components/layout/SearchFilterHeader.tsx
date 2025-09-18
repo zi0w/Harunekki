@@ -44,7 +44,7 @@ export default function SearchFilterHeader({
             {/* 🔍 버튼화 */}
             <button
               onClick={handleSearch}
-              className="p-0 w-5 h-5 flex items-center justify-center bg-[#F0F0F0] "
+              className="p-0 w-5 h-5 flex items-center justify-center"
             >
               <img src={SearchIcon} className="w-full h-full" alt="검색" />
             </button>
@@ -68,7 +68,7 @@ export default function SearchFilterHeader({
             onClick={() => {
               navigate(isFilterPage ? basePath : `${basePath}/filter`);
             }}
-            className="shrink-0 ml-2 bg-[#F9FAFB]"
+            className="shrink-0 ml-2"
           >
             <img src={FilterIcon} className="w-6 h-6" />
           </button>

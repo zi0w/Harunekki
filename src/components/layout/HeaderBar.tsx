@@ -65,7 +65,7 @@ export default function HeaderBar({
             <button
               onClick={handleBack}
               aria-label="뒤로가기"
-              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5"
+              className="flex items-center justify-center w-8 h-8 rounded-full"
             >
               <span className="text-[#9096A5] text-lg font-bold">&lt;</span>
 
