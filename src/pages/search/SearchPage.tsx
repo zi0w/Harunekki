@@ -1,15 +1,43 @@
-// src/pages/restaurants/HotRestaurantsPage.tsx
+// src/pages/search/SearchPage.tsx
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { fetchAreaBasedList } from '@/lib/api/tourapi';
 import CardItem, { type Card } from '@/components/layout/CardItem';
 import { fetchLikeCounts, fetchMyLiked } from '@/lib/supabase/likes';
 import { searchKakaoPlaces } from '@/lib/kakao/searchKakaoPlaces';
 import { useLocation } from 'react-router-dom';
+import { CATEGORY_MAP, CATEGORY_KEYWORDS } from '@/constants/categoryMap';
+
+type FilterOptions = {
+  categories: string[];
+  seasonalOnly: boolean;
+  localOnly: boolean;
+};
 
 export default function SearchPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const searchKeyword = queryParams.get('q') ?? '';
+
+  // ✅ location.state에서 filter 가져오기
+  const stateFilter = (location.state as { filter?: FilterOptions })?.filter;
+
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    categories: [],
+    seasonalOnly: false,
+    localOnly: false,
+  });
+
+  // ✅ location.state가 바뀔 때 filterOptions 갱신
+  useEffect(() => {
+    if (stateFilter) {
+      setFilterOptions(stateFilter);
+    }
+  }, [stateFilter]);
+
+  useEffect(() => {
+    console.log('✅ SearchPage 필터 업데이트됨:', filterOptions);
+  }, [filterOptions]);
+
   const [items, setItems] = useState<Card[]>([]);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -52,8 +80,10 @@ export default function SearchPage() {
           views: Math.floor(Math.random() * 5000) + 500,
           liked: false,
           likeCount: 0,
+          category: (it.cat3 as string) ?? '', // ✅ cat3 보존
         }));
 
+        // 중복 제거
         const deduped: Card[] = [];
         for (const m of mapped) {
           if (!idSetRef.current.has(m.id)) {
@@ -62,13 +92,13 @@ export default function SearchPage() {
           }
         }
 
+        // 좋아요 정보 병합
         const ids = deduped.map((d) => d.id);
         try {
           const [countsMap, myLikedSet] = await Promise.all([
             fetchLikeCounts(ids),
             fetchMyLiked(ids),
           ]);
-
           deduped.forEach((card) => {
             card.likeCount = countsMap[card.id] ?? 0;
             card.liked = myLikedSet.has(card.id);
@@ -77,17 +107,39 @@ export default function SearchPage() {
           console.warn('like info merge failed:', e);
         }
 
+        // 🔹 필터링
+        const filtered = deduped.filter((card) => {
+          const matchKeyword =
+            !searchKeyword ||
+            card.title.toLowerCase().includes(searchKeyword.toLowerCase());
+
+          const matchCategory =
+            filterOptions.categories.length === 0 ||
+            filterOptions.categories.some((selected) => {
+              const codes = CATEGORY_MAP[selected] ?? [];
+              const keywords = CATEGORY_KEYWORDS[selected] ?? [];
+
+              return (
+                codes.some(
+                  (code) => card.category?.startsWith(code), // ✅ 앞자리 매칭
+                ) || keywords.some((kw) => card.title.includes(kw))
+              );
+            });
+
+          const matchSeasonal =
+            !filterOptions.seasonalOnly || (card as any).isSeasonal === true;
+          const matchLocal =
+            !filterOptions.localOnly || (card as any).isLocal === true;
+
+          return matchKeyword && matchCategory && matchSeasonal && matchLocal;
+        });
+
+        // 🔹 정렬
         const kakaoPlaces = await searchKakaoPlaces('음식점');
         const placePriority = new Map<string, number>();
         kakaoPlaces.forEach((place: { place_name: string }, idx: number) => {
           placePriority.set(place.place_name, idx);
         });
-
-        const filtered = searchKeyword
-          ? deduped.filter((card) =>
-              card.title.toLowerCase().includes(searchKeyword.toLowerCase()),
-            )
-          : deduped;
 
         const sorted = filtered.sort((a, b) => {
           const aPriority = placePriority.get(a.title) ?? 999;
@@ -95,6 +147,7 @@ export default function SearchPage() {
           return aPriority - bPriority;
         });
 
+        // 🔹 상태 업데이트
         setItems((prev) => {
           const merged = nextPage === 1 ? sorted : [...prev, ...sorted];
           setHasMore((total || 0) > merged.length);
@@ -109,20 +162,20 @@ export default function SearchPage() {
             e !== null &&
             'code' in e &&
             (e as { code: string }).code === 'ERR_CANCELED');
-
         if (!isAbort) {
-          const msg =
-            e instanceof Error ? e.message : '데이터를 불러오지 못했습니다.';
-          setErrMsg(msg);
+          setErrMsg(
+            e instanceof Error ? e.message : '데이터를 불러오지 못했습니다.',
+          );
         }
       } finally {
         setLoading(false);
         loadingRef.current = false;
       }
     },
-    [searchKeyword],
+    [searchKeyword, filterOptions],
   );
 
+  // 초기화 + 첫 로딩
   useEffect(() => {
     setItems([]);
     setErrMsg(null);
@@ -132,8 +185,9 @@ export default function SearchPage() {
     abortRef.current?.abort();
     abortRef.current = null;
     loadPage(1);
-  }, [searchKeyword, loadPage]);
+  }, [searchKeyword, filterOptions, loadPage]);
 
+  // 무한스크롤 옵저버
   useEffect(() => {
     if (!sentinelRef.current) return;
     const io = new IntersectionObserver(

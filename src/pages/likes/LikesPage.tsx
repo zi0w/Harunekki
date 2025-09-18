@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { fetchAllLikedItems, ensureUserExists } from '@/lib/supabase/likes';
 import CardItem, { type Card } from '@/components/layout/CardItem';
 import { supabase } from '@/lib/supabase/supabase';
-
+import { useLocation } from 'react-router-dom';
 import type { LikedItem } from '@/types/LikedItem';
+import { CATEGORY_KEYWORDS } from '@/constants/categoryMap';
 
 type FilterOptions = {
   categories: string[];
@@ -21,6 +22,10 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
   const [items, setItems] = useState<LikedItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<LikedItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const stateFilter = (location.state as { filter?: FilterOptions })?.filter;
+  const effectiveFilter = stateFilter ?? filterOptions;
 
   useEffect(() => {
     fetchAllLikedItems()
@@ -49,16 +54,28 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
 
     const result = items.filter((item) => {
       const matchKeyword = item.title.toLowerCase().includes(keyword);
+      // 🔹 카테고리 필터 (CATEGORY_MAP 적용)
       const matchCategory =
-        filterOptions.categories.length === 0 ||
-        filterOptions.categories.includes(item.category ?? '');
+        effectiveFilter.categories.length === 0 ||
+        effectiveFilter.categories.some((selected) => {
+          const keywords = CATEGORY_KEYWORDS[selected] ?? [];
+          return keywords.some((kw) => item.title.includes(kw));
+        });
+
+      console.log('아이템 카테고리', item.title, item.category);
+      console.log('선택된 필터', effectiveFilter.categories);
+
+      // 🔹 제철음식 필터
       const matchSeasonal =
-        !filterOptions.seasonalOnly || item.isSeasonal === true;
-      const matchLocal = !filterOptions.localOnly || item.isLocal === true;
+        !effectiveFilter.seasonalOnly || item.isSeasonal === true;
+
+      // 🔹 지역특산물 필터
+      const matchLocal = !effectiveFilter.localOnly || item.isLocal === true;
+
       return matchKeyword && matchCategory && matchSeasonal && matchLocal;
     });
     setFilteredItems(result);
-  }, [items, searchKeyword, filterOptions]);
+  }, [items, searchKeyword, effectiveFilter]);
 
   return (
     <div className="mx-auto w-full max-w-[20.9375rem] overflow-x-hidden">
