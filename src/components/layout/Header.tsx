@@ -10,7 +10,7 @@ const Header = () => {
 
   return (
     <div className="w-full h-[40px] flex items-center bg-[#F9FAFB] border-b safe-area-top">
-      <button onClick={handleLogoClick} className="flex items-center px-5">
+      <button onClick={handleLogoClick} className="flex items-center">
         <img src={headericon} alt="하루네끼 로고" className="h-4 w-auto" />
       </button>
     </div>
