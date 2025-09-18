@@ -1,5 +1,5 @@
-// src/components/layout/SearchFilterHeader.tsx
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import HeaderBar from '@/components/layout/HeaderBar';
 import SearchIcon from '@/assets/icons/search/Search.svg';
 import FilterIcon from '@/assets/icons/search/FIlter.svg';
@@ -23,12 +23,20 @@ export default function SearchFilterHeader({
     : pathname;
 
   const isFilterPage = pathname.endsWith('/filter');
+
   const handleSearch = () => {
     const keyword = searchKeyword.trim();
     if (!keyword) return;
     navigate(`/search?q=${encodeURIComponent(keyword)}`);
-    setSearchKeyword('');
+    // 입력값은 그대로 두고, 페이지 이동은 SearchPage에서 처리
   };
+
+  // 👉 다른 경로로 이동했을 때만 검색어 초기화
+  useEffect(() => {
+    if (!pathname.startsWith('/search')) {
+      setSearchKeyword('');
+    }
+  }, [pathname, setSearchKeyword]);
 
   return (
     <HeaderBar
@@ -41,7 +49,6 @@ export default function SearchFilterHeader({
       rightSlot={
         <div className="flex flex-1 items-center gap-2 ml-2">
           <div className="flex items-center gap-2 rounded-full bg-[#F0F0F0] px-3 py-2 flex-1">
-            {/* 🔍 버튼화 */}
             <button
               onClick={handleSearch}
               className="p-0 w-5 h-5 flex items-center justify-center bg-[#F0F0F0] appearance-none border-none outline-none"
