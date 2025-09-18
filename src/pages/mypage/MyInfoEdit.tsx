@@ -142,13 +142,12 @@ export default function MyInfoEdit() {
           <button
             type="button"
             onClick={() => setGender('male')}
-            className={`rounded-lg py-2 text-center font-abeezee shadow-sm transition-all
-              bg-white text-[#596072]
-              focus:outline-none focus:ring-1 focus:ring-gray-200
+            className={`rounded-lg py-2 text-center font-abeezee border transition-colors
+              bg-white focus:bg-white active:bg-white hover:bg-white
               ${
                 gender === 'male'
-                  ? 'border-2 border-black' // 선택 시 스타일
-                  : 'border border-gray-300' // 기본 스타일
+                  ? 'text-[#EF6F6F] border-[#EF6F6F]' // 선택 시 스타일
+                  : 'text-[#8A8A8A] border-gray-300' // 기본 스타일
               }`}
           >
             남성
@@ -156,13 +155,12 @@ export default function MyInfoEdit() {
           <button
             type="button"
             onClick={() => setGender('female')}
-            className={`rounded-lg py-2 text-center font-abeezee shadow-sm transition-all
-              bg-white text-[#596072]
-              focus:outline-none focus:ring-1 focus:ring-gray-200
+            className={`rounded-lg py-2 text-center font-abeezee border transition-colors
+              bg-white focus:bg-white active:bg-white hover:bg-white
               ${
                 gender === 'female'
-                  ? 'border-2 border-black' // 선택 시 스타일
-                  : 'border border-gray-300' // 기본 스타일
+                  ? 'text-[#EF6F6F] border-[#EF6F6F]' // 선택 시 스타일
+                  : 'text-[#8A8A8A] border-gray-300' // 기본 스타일
               }`}
           >
             여성
