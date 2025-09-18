@@ -105,18 +105,23 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
 
     console.log('🔑 API 키 확인됨');
 
-    // CORS 프록시를 사용하여 직접 호출
-    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
-    const targetUrl = `http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst?apikey=${apiKey}&schType=B&tema_ctg01=TM003&numOfRows=10`;
+    // 원래 방식으로 상대 경로 사용
+    const url = new URL(
+      '/nongsaro/service/nvpcFdCkry/fdNmLst',
+      window.location.origin,
+    );
+    url.search = new URLSearchParams({
+      apiKey: apiKey,
+      apiType: 'json',
+      pageNo: '1',
+      numOfRows: '30',
+      schType: 'B',
+      tema_ctg01: 'TM003',
+    }).toString();
+    
+    console.log('🌐 API URL:', url.toString());
 
-    console.log('🌐 프록시 URL:', proxyUrl + encodeURIComponent(targetUrl));
-
-    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-      headers: {
-        'Referer': 'https://harunekki.vercel.app',
-        'User-Agent': 'Mozilla/5.0 (compatible; Harunekki/1.0)'
-      }
-    });
+    const response = await fetch(url.toString());
 
     console.log('📡 응답 상태:', response.status, response.statusText);
 

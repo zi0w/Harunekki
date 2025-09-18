@@ -2,6 +2,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/nongsaro/(.*)",
+      "destination": "http://api.nongsaro.go.kr/service/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
