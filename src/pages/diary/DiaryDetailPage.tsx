@@ -44,7 +44,7 @@ const DiaryDetailPage = () => {
       ).diarySettingsButton = (
         <button
           onClick={() => setShowDeleteModal(true)}
-          className="flex items-center justify-center"
+          className="flex items-center justify-center px-2 py-1 rounded-full"
           aria-label="삭제"
         >
           <span
