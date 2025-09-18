@@ -52,14 +52,7 @@ export default function HeaderBar({
       <div className="flex h-full items-center px-5">
         {/* 좌측: 로고 또는 백버튼 */}
         {variant === 'logo' ? (
-          <div className="flex items-center">
-            <img
-              src={logo}
-              alt="로고"
-              className="h-4 w-auto"
-              draggable={false}
-            />
-          </div>
+          <img src={logo} alt="로고" className="h-4 w-auto" draggable={false} />
         ) : (
           <div className="flex items-center gap-2">
             <button
