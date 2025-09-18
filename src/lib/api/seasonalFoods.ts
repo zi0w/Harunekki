@@ -105,12 +105,9 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
 
     console.log('🔑 API 키 확인됨');
 
-    // 원래 방식으로 상대 경로 사용
-    const url = new URL(
-      '/nongsaro/service/nvpcFdCkry/fdNmLst',
-      window.location.origin,
-    );
-    url.search = new URLSearchParams({
+    // CORS 프록시를 사용하여 농사로 API 호출
+    const targetUrl = new URL('http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst');
+    targetUrl.search = new URLSearchParams({
       apiKey: apiKey,
       apiType: 'json',
       pageNo: '1',
@@ -119,9 +116,12 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       tema_ctg01: 'TM003',
     }).toString();
     
-    console.log('🌐 API URL:', url.toString());
+    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+    const finalUrl = proxyUrl + encodeURIComponent(targetUrl.toString());
+    
+    console.log('🌐 프록시 URL:', finalUrl);
 
-    const response = await fetch(url.toString());
+    const response = await fetch(finalUrl);
 
     console.log('📡 응답 상태:', response.status, response.statusText);
 
