@@ -1,7 +1,7 @@
 // src/components/layout/SearchFilterHeader.tsx
 import { useLocation, useNavigate } from 'react-router-dom';
 import HeaderBar from '@/components/layout/HeaderBar';
-import SearchIcon from '@/assets/icons/search/Search.svg';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 import FilterIcon from '@/assets/icons/search/FIlter.svg';
 
 interface Props {
@@ -46,7 +46,7 @@ export default function SearchFilterHeader({
               onClick={handleSearch}
               className="p-0 w-5 h-5 flex items-center justify-center"
             >
-              <img src={SearchIcon} className="w-full h-full" alt="검색" />
+              <HiMagnifyingGlass className="w-5 h-5 text-[#9096A5]" />
             </button>
 
             <input
