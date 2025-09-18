@@ -91,27 +91,27 @@ export const getImageUrl = (item: any): string => {
 //   }
 //
 
-// 농촌진흥청 시절식 API 호출 함수 (Supabase Edge Function 사용)
+// 농촌진흥청 시절식 API 호출 함수 (직접 호출)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
-    console.log('🔄 제철음식 API 호출 시작 (Supabase Edge Function)');
+    console.log('🔄 제철음식 API 호출 시작 (직접 호출)');
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('❌ Supabase 환경변수가 설정되지 않았습니다.');
+    if (!apiKey) {
+      console.error('❌ 농사로 API 키가 설정되지 않았습니다.');
       return [];
     }
 
-    console.log('🌐 Supabase URL:', supabaseUrl);
+    console.log('🔑 API 키 확인됨');
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/seasonal-foods`, {
-      headers: {
-        Authorization: `Bearer ${supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // CORS 프록시를 사용하여 직접 호출
+    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+    const targetUrl = `http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst?apikey=${apiKey}&schType=B&tema_ctg01=TM003&numOfRows=10`;
+    
+    console.log('🌐 프록시 URL:', proxyUrl + encodeURIComponent(targetUrl));
+
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
 
     console.log('📡 응답 상태:', response.status, response.statusText);
 
