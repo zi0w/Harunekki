@@ -25,6 +25,12 @@ const clientV2Detail = axios.create({
   baseURL: '/tourapi/B551011/KorService2',
   timeout: 30000,
   headers: { Accept: 'application/json' },
+  params: {
+    serviceKey: SERVICE_KEY,
+    MobileOS: 'ETC',
+    MobileApp: 'harunekki',
+    _type: 'json', // ✅ 이거 추가!
+  },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
