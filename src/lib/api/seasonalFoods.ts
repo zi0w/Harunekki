@@ -94,8 +94,6 @@ export const getImageUrl = (item: any): string => {
 // 농촌진흥청 시절식 API 호출 함수 (직접 호출)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
-    console.log('🔄 제철음식 API 호출 시작 (직접 호출)');
-
     const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
 
     if (!apiKey) {
@@ -103,10 +101,10 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       return [];
     }
 
-    console.log('🔑 API 키 확인됨');
-
     // CORS 프록시를 사용하여 농사로 API 호출
-    const targetUrl = new URL('http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst');
+    const targetUrl = new URL(
+      'http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst',
+    );
     targetUrl.search = new URLSearchParams({
       apiKey: apiKey,
       apiType: 'json',
@@ -115,15 +113,11 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       schType: 'B',
       tema_ctg01: 'TM003',
     }).toString();
-    
+
     const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
     const finalUrl = proxyUrl + encodeURIComponent(targetUrl.toString());
-    
-    console.log('🌐 프록시 URL:', finalUrl);
 
     const response = await fetch(finalUrl);
-
-    console.log('📡 응답 상태:', response.status, response.statusText);
 
     if (!response.ok) {
       console.error('❌ API 호출 실패:', response.status, response.statusText);
@@ -132,17 +126,12 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
 
     // 응답이 XML인지 JSON인지 확인
     const contentType = response.headers.get('content-type');
-    console.log('📄 Content-Type:', contentType);
-
     let data;
 
     if (contentType && contentType.includes('application/json')) {
-      console.log('📋 JSON 응답 처리');
       data = await response.json();
     } else {
-      console.log('📋 XML 응답 처리');
       const xmlText = await response.text();
-      console.log('📄 XML 응답:', xmlText.substring(0, 200) + '...');
       data = parseXmlToJson(xmlText);
     }
 
@@ -169,11 +158,9 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
         return 0;
       });
 
-      console.log('✅ 제철음식 데이터 로드 성공:', sortedCards.length, '개');
       return sortedCards;
     }
 
-    console.log('⚠️ 응답에 데이터가 없습니다:', data);
     return [];
   } catch (error) {
     console.error('❌ 시절식 API 호출 실패:', error);
