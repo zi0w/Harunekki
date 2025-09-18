@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase/supabase';
+import { ensureUserExists } from '@/lib/supabase/likes';
 
 const EmailSignupPage = () => {
   const navigate = useNavigate();
@@ -38,17 +39,14 @@ const EmailSignupPage = () => {
     if (error) {
       setError(error.message);
     } else if (data.user) {
-      // 사용자 생성 후 users 테이블에 직접 추가
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({ id: data.user.id, name: null });
-
-      if (userError) {
-        console.error('users insert error:', userError);
-        setError('사용자 생성 중 오류가 발생했습니다.');
-      } else {
+      try {
+        // ensureUserExists 함수를 사용하여 안전하게 사용자 생성
+        await ensureUserExists();
         // 회원가입 완료 후 AuthCallback을 거쳐 온보딩으로 이동
         navigate('/auth/callback');
+      } catch (userError) {
+        console.error('사용자 생성 중 오류:', userError);
+        setError('사용자 생성 중 오류가 발생했습니다.');
       }
     }
     setLoading(false);

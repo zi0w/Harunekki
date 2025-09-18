@@ -91,20 +91,21 @@ export const getImageUrl = (item: any): string => {
 //   }
 //
 
-// 농촌진흥청 시절식 API 호출 함수
+// 농촌진흥청 시절식 API 호출 함수 (직접 호출)
 export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
   try {
     const apiKey = import.meta.env.VITE_NONGSARO_API_KEY;
+
     if (!apiKey) {
-      console.error('NOGNSARO_API_KEY가 설정되지 않았습니다.');
+      console.error('❌ 농사로 API 키가 설정되지 않았습니다.');
       return [];
     }
 
-    const url = new URL(
-      '/nongsaro/service/nvpcFdCkry/fdNmLst',
-      window.location.origin,
+    // CORS 프록시를 사용하여 농사로 API 호출
+    const targetUrl = new URL(
+      'http://api.nongsaro.go.kr/service/nvpcFdCkry/fdNmLst',
     );
-    url.search = new URLSearchParams({
+    targetUrl.search = new URLSearchParams({
       apiKey: apiKey,
       apiType: 'json',
       pageNo: '1',
@@ -113,9 +114,13 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
       tema_ctg01: 'TM003',
     }).toString();
 
-    const response = await fetch(url.toString());
+    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+    const finalUrl = proxyUrl + encodeURIComponent(targetUrl.toString());
+
+    const response = await fetch(finalUrl);
 
     if (!response.ok) {
+      console.error('❌ API 호출 실패:', response.status, response.statusText);
       throw new Error(`API 호출 실패: ${response.status}`);
     }
 
@@ -158,7 +163,7 @@ export const fetchSeasonalFoods = async (): Promise<SeasonalCard[]> => {
 
     return [];
   } catch (error) {
-    console.error('시절식 API 호출 실패:', error);
+    console.error('❌ 시절식 API 호출 실패:', error);
     return [];
   }
 };

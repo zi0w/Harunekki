@@ -64,16 +64,16 @@ const Router = () => {
           />
           <Route path="/recommend" element={<RecommendPage />} />
           <Route path="/event" element={<EventPage />} />
-          <Route path="search" element={<SearchPage />} />
+          <Route path="/search" element={<SearchPage />} />
           {/* 인증 관련 페이지 */}
-          <Route path="login" element={<LoginPage />} />
-          <Route path="auth/email-login" element={<EmailLoginPage />} />
-          <Route path="auth/email-signup" element={<EmailSignupPage />} />
-          <Route path="auth/callback" element={<AuthCallback />} />
-          <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/email-login" element={<EmailLoginPage />} />
+          <Route path="/auth/email-signup" element={<EmailSignupPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           {/* 보호된 페이지 (로그인 필요) */}
           <Route
-            path="likes"
+            path="/likes"
             element={
               <ProtectedRoute requireAuth={true}>
                 <LikedPage
@@ -108,7 +108,7 @@ const Router = () => {
             }
           />
           <Route
-            path="diary"
+            path="/diary"
             element={
               <ProtectedRoute requireAuth={true}>
                 <DiaryPage />
@@ -116,7 +116,7 @@ const Router = () => {
             }
           />
           <Route
-            path="diary/:id"
+            path="/diary/:id"
             element={
               <ProtectedRoute requireAuth={true}>
                 <DiaryDetailPage />
@@ -124,7 +124,7 @@ const Router = () => {
             }
           />
           <Route
-            path="diary/:diaryId/place/:placeId"
+            path="/diary/:diaryId/place/:placeId"
             element={
               <ProtectedRoute requireAuth={true}>
                 <DiaryRecordPage />
@@ -132,7 +132,7 @@ const Router = () => {
             }
           />
           <Route
-            path="mypage"
+            path="/mypage"
             element={
               <ProtectedRoute requireAuth={true}>
                 <MyPage />
@@ -140,7 +140,7 @@ const Router = () => {
             }
           />
           <Route
-            path="mypage/info"
+            path="/mypage/info"
             element={
               <ProtectedRoute requireAuth={true}>
                 <MyInfo />
@@ -148,7 +148,7 @@ const Router = () => {
             }
           />
           <Route
-            path="mypage/info/edit"
+            path="/mypage/info/edit"
             element={
               <ProtectedRoute requireAuth={true}>
                 <MyInfoEdit />
@@ -156,7 +156,7 @@ const Router = () => {
             }
           />
           <Route
-            path="mypage/badges"
+            path="/mypage/badges"
             element={
               <ProtectedRoute requireAuth={true}>
                 <MyBadges />
@@ -164,7 +164,7 @@ const Router = () => {
             }
           />
           <Route
-            path="carrier"
+            path="/carrier"
             element={
               <ProtectedRoute requireAuth={true}>
                 <CarrierPage />
@@ -172,7 +172,7 @@ const Router = () => {
             }
           />
           <Route
-            path="carrier/makediary"
+            path="/carrier/makediary"
             element={
               <ProtectedRoute requireAuth={true}>
                 <MakeDiaryPage />
