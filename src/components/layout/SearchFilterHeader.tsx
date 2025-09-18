@@ -44,7 +44,11 @@ export default function SearchFilterHeader({
             {/* 🔍 버튼화 */}
             <button
               onClick={handleSearch}
-              className="p-0 w-5 h-5 flex items-center justify-center"
+
+              className="p-0 w-5 h-5 flex items-center justify-center bg-[#F0F0F0] appearance-none border-none outline-none"
+
+
+
             >
               <HiMagnifyingGlass className="w-5 h-5 text-[#9096A5]" />
             </button>
@@ -68,9 +72,13 @@ export default function SearchFilterHeader({
             onClick={() => {
               navigate(isFilterPage ? basePath : `${basePath}/filter`);
             }}
-            className="shrink-0 ml-2"
+
+            className="shrink-0 ml-2 bg-[#F9FAFB] appearance-none border-none outline-none"
+
+            
+
           >
-            <img src={FilterIcon} className="w-6 h-6" />
+            <img src={FilterIcon} className="w-6 h-6" alt="필터" />
           </button>
         </div>
       }
