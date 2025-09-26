@@ -18,7 +18,7 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: '/applepwa_icon.png',
+            src: '/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
