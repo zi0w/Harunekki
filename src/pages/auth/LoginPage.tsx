@@ -39,22 +39,28 @@ const LoginPage = () => {
         {/* 이메일 로그인 버튼 */}
         <button
           onClick={() => navigate('/auth/email-login')}
-          className="w-[335px] h-[52px]"
+          className="w-[335px] h-[52px] bg-[#F9FAFB] appearance-none border-none outline-none"
         >
           <img src={emailLoginBtn} width={335} height={52} />
           이메일로 로그인
         </button>
 
         {/* 소셜 로그인 버튼들 */}
-        <button onClick={() => signIn('google')} className="w-[335px] h-[52px]">
+        <button
+          onClick={() => signIn('google')}
+          className="w-[335px] h-[52px] bg-[#F9FAFB] appearance-none border-none outline-none"
+        >
           <img src={googleLoginBtn} width={335} height={52} />
         </button>
-        <button onClick={() => signIn('kakao')} className="w-[335px] h-[52px]">
+        <button
+          onClick={() => signIn('kakao')}
+          className="w-[335px] h-[52px] bg-[#F9FAFB] appearance-none border-none outline-none"
+        >
           <img src={kakaoLoginBtn} width={335} height={52} />
         </button>
         <button
           onClick={() => signIn('facebook')}
-          className="w-[335px] h-[52px]"
+          className="w-[335px] h-[52px] bg-[#F9FAFB] appearance-none border-none outline-none"
         >
           <img src={facebookLoginBtn} width={335} height={52} />
         </button>

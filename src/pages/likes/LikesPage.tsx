@@ -5,7 +5,7 @@ import CardItem, { type Card } from '@/components/layout/CardItem';
 import { supabase } from '@/lib/supabase/supabase';
 import { useLocation } from 'react-router-dom';
 import type { LikedItem } from '@/types/LikedItem';
-import { CATEGORY_KEYWORDS } from '@/constants/categoryMap';
+import { CATEGORY_MAP } from '@/constants/categoryMap';
 
 type FilterOptions = {
   categories: string[];
@@ -58,12 +58,9 @@ export default function LikedPage({ searchKeyword, filterOptions }: Props) {
       const matchCategory =
         effectiveFilter.categories.length === 0 ||
         effectiveFilter.categories.some((selected) => {
-          const keywords = CATEGORY_KEYWORDS[selected] ?? [];
-          return keywords.some((kw) => item.title.includes(kw));
+          const validValues = CATEGORY_MAP[selected];
+          return validValues?.includes(item.category ?? '');
         });
-
-      console.log('아이템 카테고리', item.title, item.category);
-      console.log('선택된 필터', effectiveFilter.categories);
 
       // 🔹 제철음식 필터
       const matchSeasonal =
