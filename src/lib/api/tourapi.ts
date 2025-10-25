@@ -34,7 +34,6 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 //   validateStatus: (s) => s >= 200 && s < 300,
 // });
 
-// 개발/배포 분기: dev는 Vite 프록시(/tourapi), prod는 Vercel 함수(/api/tour)
 const BASE = import.meta.env.DEV ? '/tourapi' : '/api/tour';
 
 const clientV2 = axios.create({
@@ -78,9 +77,7 @@ function attachInterceptor(c: typeof clientV2) {
     (res) => res,
     async (error: AxiosError) => {
       if (!error.response) {
-        return Promise.reject(
-          new Error(`[HTTP ❌ NO RESPONSE] ${error.message}`),
-        );
+        return Promise.reject(new Error(` ${error.message}`));
       }
       const status = error.response.status;
       const data = error.response.data;
@@ -321,6 +318,18 @@ export async function fetchAreaBasedList({
 
     return { items, total: body.totalCount ?? 0 };
   } catch (err) {
+    // ✅ "취소" 에러인지 확인 (Axios: 'canceled', Fetch: 'AbortError')
+    const isAbort =
+      (err instanceof Error && err.message.includes('canceled')) ||
+      (err instanceof DOMException && err.name === 'AbortError');
+
+    if (isAbort) {
+      console.log('[TourAPI] Request was canceled by client.');
+      // 의도된 취소이므로 fallback을 실행하지 않고 에러를 다시 throw
+      throw err;
+    }
+
+    // ✅ "취소"가 아닌 실제 실패일 경우에만 로그 및 fallback 실행
     console.error('[TourAPI 실패 → Supabase fallback]', err);
 
     // ✅ HTML/XML 응답인 경우 추가 로깅
@@ -366,6 +375,16 @@ export async function fetchDetailCommon(
     const body = guardBody(json, 'detailCommon2');
     return (body.items?.item?.[0] ?? {}) as DetailCommonItem;
   } catch (err) {
+    // ✅ "취소" 에러인지 확인
+    const isAbort =
+      (err instanceof Error && err.message.includes('canceled')) ||
+      (err instanceof DOMException && err.name === 'AbortError');
+
+    if (isAbort) {
+      console.log(`[TourAPI detail] Request canceled. contentId=${contentId}`);
+      throw err; // 의도된 취소
+    }
+
     console.error(`[TourAPI detail 실패] contentId=${contentId}`, err);
 
     // ✅ HTML/XML 응답인 경우 추가 로깅

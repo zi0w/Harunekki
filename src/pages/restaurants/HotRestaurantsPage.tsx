@@ -98,12 +98,18 @@ export default function HotRestaurantsPage() {
 
         pageRef.current = nextPage;
       } catch (e: unknown) {
-        const isAbort = e instanceof DOMException && e.name === 'AbortError';
+        // ✅ axios의 'canceled' 에러와 fetch의 'AbortError'를 모두 감지
+        const isAbort =
+          (e instanceof DOMException && e.name === 'AbortError') ||
+          (e instanceof Error && e.message.includes('canceled'));
+
         if (!isAbort) {
+          // '취소'가 아닌 실제 에러일 때만 메시지 표시
           const msg =
             e instanceof Error ? e.message : '데이터를 불러오지 못했습니다.';
           setErrMsg(msg);
         }
+        // isAbort가 true (의도된 취소)라면 아무것도 하지 않고 조용히 넘어감
       } finally {
         setLoading(false);
         loadingRef.current = false;
@@ -125,6 +131,7 @@ export default function HotRestaurantsPage() {
     // 첫 페이지 로드
     loadPage(1);
   }, [activeRegion, loadPage]);
+
   useEffect(() => {
     if (!sentinelRef.current) return;
     const io = new IntersectionObserver(
