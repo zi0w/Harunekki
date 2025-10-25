@@ -34,7 +34,7 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 //   validateStatus: (s) => s >= 200 && s < 300,
 // });
 
-const BASE = import.meta.env.DEV ? '/tourapi' : '/api/tour';
+const BASE = import.meta.env.DEV ? '/tourapi' : '/api';
 
 const clientV2 = axios.create({
   baseURL: `${BASE}/B551011/KorService2`,
