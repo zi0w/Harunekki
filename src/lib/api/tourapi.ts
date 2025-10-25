@@ -8,12 +8,41 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 /* ===============================
    Axios Clients
 ================================ */
+// const clientV2 = axios.create({
+//   baseURL: 'https://apis.data.go.kr/B551011/KorService2',
+//   timeout: 30000,
+//   headers: { Accept: 'application/json' },
+//   params: {
+//     serviceKey: SERVICE_KEY,
+//     MobileOS: 'ETC',
+//     MobileApp: 'harunekki',
+//     _type: 'json',
+//   },
+//   validateStatus: (s) => s >= 200 && s < 300,
+// });
+
+// const clientV2Detail = axios.create({
+//   baseURL: 'https://apis.data.go.kr/B551011/KorService2',
+//   timeout: 30000,
+//   headers: { Accept: 'application/json' },
+//   params: {
+//     serviceKey: SERVICE_KEY,
+//     MobileOS: 'ETC',
+//     MobileApp: 'harunekki',
+//     _type: 'json', // ✅ 이거 추가!
+//   },
+//   validateStatus: (s) => s >= 200 && s < 300,
+// });
+
+// 개발/배포 분기: dev는 Vite 프록시(/tourapi), prod는 Vercel 함수(/api/tour)
+const BASE = import.meta.env.DEV ? '/tourapi' : '/api/tour';
+
 const clientV2 = axios.create({
-  baseURL: 'https://apis.data.go.kr/B551011/KorService2',
+  baseURL: `${BASE}/B551011/KorService2`,
   timeout: 30000,
   headers: { Accept: 'application/json' },
   params: {
-    serviceKey: SERVICE_KEY,
+    serviceKey: SERVICE_KEY, // ← 키는 여기서 한 번만
     MobileOS: 'ETC',
     MobileApp: 'harunekki',
     _type: 'json',
@@ -22,14 +51,14 @@ const clientV2 = axios.create({
 });
 
 const clientV2Detail = axios.create({
-  baseURL: 'https://apis.data.go.kr/B551011/KorService2',
+  baseURL: `${BASE}/B551011/KorService2`,
   timeout: 30000,
   headers: { Accept: 'application/json' },
   params: {
     serviceKey: SERVICE_KEY,
     MobileOS: 'ETC',
     MobileApp: 'harunekki',
-    _type: 'json', // ✅ 이거 추가!
+    _type: 'json',
   },
   validateStatus: (s) => s >= 200 && s < 300,
 });
