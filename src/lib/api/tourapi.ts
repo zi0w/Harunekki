@@ -41,11 +41,8 @@ const BASE = import.meta.env.DEV
 const clientV2 = axios.create({
   baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { 
+  headers: {
     Accept: 'application/json',
-    ...(import.meta.env.DEV ? {} : {
-      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-    })
   },
   params: import.meta.env.DEV
     ? {
@@ -63,11 +60,8 @@ const clientV2 = axios.create({
 const clientV2Detail = axios.create({
   baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { 
+  headers: {
     Accept: 'application/json',
-    ...(import.meta.env.DEV ? {} : {
-      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-    })
   },
   params: import.meta.env.DEV
     ? {
