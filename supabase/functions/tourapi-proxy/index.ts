@@ -2,7 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
@@ -19,22 +20,34 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const apiPath = url.searchParams.get('path');
+
+    // path는 쿼리(path=...) 또는 경로 세그먼트(/areaBasedList2 등)로 받을 수 있게 처리
+    const pathname = url.pathname.replace(/.*tourapi-proxy\/?/, '');
+    const apiPath = url.searchParams.get('path') || pathname || '';
     const serviceKey = Deno.env.get('TOURAPI_KEY');
 
     if (!apiPath || !serviceKey) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
-    // TourAPI 기본 URL
-    const baseUrl = 'https://apis.data.go.kr/B551011/KorService2';
-    const targetUrl = `${baseUrl}/${apiPath}`;
+    // TourAPI 기본 URL 구성 (path가 전체 경로인지, 엔드포인트만 왔는지에 따라 처리)
+    const root = 'https://apis.data.go.kr';
+    const cleanPath = apiPath.replace(/^\/+/, '');
+
+    let targetUrl = '';
+    if (cleanPath.startsWith('B551011/')) {
+      // 전체 경로가 넘어온 경우 (예: B551011/KorService2)
+      targetUrl = `${root}/${cleanPath}`;
+    } else {
+      // 엔드포인트만 넘어온 경우 (예: areaBasedList2)
+      targetUrl = `${root}/B551011/KorService2/${cleanPath}`;
+    }
 
     // 요청 파라미터 구성
     const requestParams = new URLSearchParams();
@@ -68,26 +81,25 @@ serve(async (req) => {
     }
 
     const data = await response.text();
-    
+
     return new Response(data, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
       },
     });
-
   } catch (error) {
     console.error('TourAPI Proxy Error:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        error: 'TourAPI proxy failed', 
-        details: error.message 
+      JSON.stringify({
+        error: 'TourAPI proxy failed',
+        details: error.message,
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   }
 });
