@@ -66,10 +66,19 @@ export async function ensureUserExists() {
     .maybeSingle();
 
   if (!existingUser) {
-    // 새 유저인 경우에만 insert (소셜 로그인 시 name 포함, 이메일 로그인 시 null)
+    // 새 유저인 경우에만 insert (이메일 로그인은 이메일 아이디를 기본 닉네임으로)
+    const meta =
+      (user.user_metadata as Record<string, unknown> | undefined) ?? {};
+    const metaName =
+      (meta.name as string | undefined) ||
+      (meta.full_name as string | undefined) ||
+      null;
+    const emailLocal = user.email?.split('@')?.[0] ?? null;
+    const fallbackName = metaName ?? emailLocal;
+
     const { error: insertError } = await supabase.from('users').insert({
       id: user.id,
-      name: user.user_metadata?.name ?? null,
+      name: fallbackName,
     });
     if (insertError) throw insertError;
   }
