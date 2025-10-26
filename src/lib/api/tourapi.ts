@@ -296,21 +296,24 @@ export async function fetchAreaBasedList({
   const endpoint = keyword ? 'searchKeyword2' : 'areaBasedList2';
 
   try {
-    const { data } = await clientV2.get(import.meta.env.DEV ? `/${endpoint}` : '', {
-      params: {
-        arrange,
-        pageNo,
-        numOfRows,
-        areaCode,
-        sigunguCode,
-        contentTypeId,
-        ...(keyword ? { keyword } : {}),
-        ...(import.meta.env.DEV
-          ? {}
-          : { path: `B551011/KorService2/${endpoint}` }),
+    const { data } = await clientV2.get(
+      import.meta.env.DEV ? `/${endpoint}` : '',
+      {
+        params: {
+          arrange,
+          pageNo,
+          numOfRows,
+          areaCode,
+          sigunguCode,
+          contentTypeId,
+          ...(keyword ? { keyword } : {}),
+          ...(import.meta.env.DEV
+            ? {}
+            : { path: `B551011/KorService2/${endpoint}` }),
+        },
+        signal,
       },
-      signal,
-    });
+    );
 
     const json = ensureJson<ApiListResponse>(data);
     const body = guardBody(json, endpoint);
