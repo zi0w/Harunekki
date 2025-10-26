@@ -27,6 +27,8 @@ export default function AuthCallback() {
           user.user_metadata as Record<string, unknown> | undefined
         )?.full_name?.toString?.() ??
         null;
+      const emailLocalName = user.email?.split('@')?.[0] ?? null;
+      const fallbackName = metadataName ?? emailLocalName;
 
       const { data: existing, error: fetchExistingErr } = await supabase
         .from('users')
@@ -42,17 +44,17 @@ export default function AuthCallback() {
       if (!existing) {
         const { error: insertErr } = await supabase
           .from('users')
-          .insert({ id: user.id, name: metadataName });
+          .insert({ id: user.id, name: fallbackName });
         if (insertErr) {
           console.error('users insert error:', insertErr);
           nav('/login', { replace: true });
           return;
         }
-      } else if (!existing.name && metadataName) {
+      } else if (!existing.name && fallbackName) {
         // 기존 레코드의 name이 비어있고 메타데이터에 이름이 있으면 보강
         const { error: updateErr } = await supabase
           .from('users')
-          .update({ name: metadataName })
+          .update({ name: fallbackName })
           .eq('id', user.id);
         if (updateErr) {
           console.warn('users name backfill warning:', updateErr);
@@ -73,7 +75,7 @@ export default function AuthCallback() {
       }
 
       const completed = !!(
-        row?.name &&
+        (row?.name || fallbackName) &&
         row?.age !== null &&
         row?.age !== undefined &&
         row?.gender
