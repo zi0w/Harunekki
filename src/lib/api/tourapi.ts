@@ -34,30 +34,34 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 //   validateStatus: (s) => s >= 200 && s < 300,
 // });
 
-const BASE = import.meta.env.DEV ? '/tourapi' : '/api';
+const BASE = import.meta.env.DEV ? '/tourapi' : 'https://fwezadzxkcczqsanqvyd.supabase.co/functions/v1/tourapi-proxy';
 
 const clientV2 = axios.create({
-  baseURL: `${BASE}/B551011/KorService2`,
+  baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
   headers: { Accept: 'application/json' },
-  params: {
-    serviceKey: SERVICE_KEY, // ← 키는 여기서 한 번만
+  params: import.meta.env.DEV ? {
+    serviceKey: SERVICE_KEY,
     MobileOS: 'ETC',
     MobileApp: 'harunekki',
     _type: 'json',
+  } : {
+    path: 'B551011/KorService2',
   },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
 const clientV2Detail = axios.create({
-  baseURL: `${BASE}/B551011/KorService2`,
+  baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
   headers: { Accept: 'application/json' },
-  params: {
+  params: import.meta.env.DEV ? {
     serviceKey: SERVICE_KEY,
     MobileOS: 'ETC',
     MobileApp: 'harunekki',
     _type: 'json',
+  } : {
+    path: 'B551011/KorService2',
   },
   validateStatus: (s) => s >= 200 && s < 300,
 });
@@ -154,7 +158,7 @@ function ensureJson<T>(data: unknown): T {
     }
     try {
       return JSON.parse(s) as T;
-    } catch (parseError) {
+    } catch {
       throw new Error(`String payload is not JSON: ${s.slice(0, 200)}`);
     }
   }
@@ -362,8 +366,13 @@ export async function fetchDetailCommon(
 ): Promise<DetailCommonItem> {
   try {
     const { data } = await clientV2Detail.get('/detailCommon2', {
-      params: {
+      params: import.meta.env.DEV ? {
         serviceKey: SERVICE_KEY,
+        contentId,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      } : {
         contentId,
         MobileOS: 'ETC',
         MobileApp: 'harunekki',
