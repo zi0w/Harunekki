@@ -264,9 +264,18 @@ export async function fetchPopularRestaurants(limit = 50) {
 
 /** ✅ 지역 코드 목록 */
 export async function fetchAreaCodes() {
-  const { data } = await clientV2.get('/areaCode2', {
-    params: { numOfRows: 50 },
-  });
+  const endpoint = 'areaCode2';
+  const { data } = await clientV2.get(
+    import.meta.env.DEV ? `/${endpoint}` : '',
+    {
+      params: {
+        numOfRows: 50,
+        ...(import.meta.env.DEV
+          ? {}
+          : { path: `B551011/KorService2/${endpoint}` }),
+      },
+    },
+  );
   const json = ensureJson<ApiListResponse>(data);
   const body = guardBody(json, 'areaCode2');
   return body.items?.item ?? [];

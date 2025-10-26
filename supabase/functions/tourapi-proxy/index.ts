@@ -21,9 +21,14 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
 
-    // path는 쿼리(path=...) 또는 경로 세그먼트(/areaBasedList2 등)로 받을 수 있게 처리
-    const pathname = url.pathname.replace(/.*tourapi-proxy\/?/, '');
-    const apiPath = url.searchParams.get('path') || pathname || '';
+    // path는 쿼리(path=...)와 경로 세그먼트(/areaBasedList2 등)를 모두 병합해서 사용
+    const seg = url.pathname
+      .replace(/.*tourapi-proxy\/?/, '')
+      .replace(/^\/+/, '');
+    let apiPath = (url.searchParams.get('path') || '').replace(/^\/+/, '');
+    if (seg) {
+      apiPath = apiPath ? `${apiPath.replace(/\/+$/, '')}/${seg}` : seg;
+    }
     const serviceKey = Deno.env.get('TOURAPI_KEY');
 
     if (!apiPath || !serviceKey) {
@@ -59,7 +64,9 @@ serve(async (req) => {
     // 원본 요청의 쿼리 파라미터 추가
     const originalUrl = new URL(req.url);
     for (const [key, value] of originalUrl.searchParams.entries()) {
-      if (key !== 'path') {
+      if (
+        !['path', 'serviceKey', 'MobileOS', 'MobileApp', '_type'].includes(key)
+      ) {
         requestParams.set(key, value);
       }
     }
