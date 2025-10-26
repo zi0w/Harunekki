@@ -11,6 +11,12 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // 인증 체크 (선택적)
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) {
+    console.warn('No authorization header provided, but continuing...');
+  }
+
   try {
     const url = new URL(req.url);
     const apiPath = url.searchParams.get('path');
