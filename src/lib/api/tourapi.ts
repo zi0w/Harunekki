@@ -34,35 +34,51 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 //   validateStatus: (s) => s >= 200 && s < 300,
 // });
 
-const BASE = import.meta.env.DEV ? '/tourapi' : 'https://fwezadzxkcczqsanqvyd.supabase.co/functions/v1/tourapi-proxy';
+const BASE = import.meta.env.DEV
+  ? '/tourapi'
+  : 'https://fwezadzxkcczqsanqvyd.supabase.co/functions/v1/tourapi-proxy';
 
 const clientV2 = axios.create({
   baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { Accept: 'application/json' },
-  params: import.meta.env.DEV ? {
-    serviceKey: SERVICE_KEY,
-    MobileOS: 'ETC',
-    MobileApp: 'harunekki',
-    _type: 'json',
-  } : {
-    path: 'B551011/KorService2',
+  headers: { 
+    Accept: 'application/json',
+    ...(import.meta.env.DEV ? {} : {
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    })
   },
+  params: import.meta.env.DEV
+    ? {
+        serviceKey: SERVICE_KEY,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      }
+    : {
+        path: 'B551011/KorService2',
+      },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
 const clientV2Detail = axios.create({
   baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { Accept: 'application/json' },
-  params: import.meta.env.DEV ? {
-    serviceKey: SERVICE_KEY,
-    MobileOS: 'ETC',
-    MobileApp: 'harunekki',
-    _type: 'json',
-  } : {
-    path: 'B551011/KorService2',
+  headers: { 
+    Accept: 'application/json',
+    ...(import.meta.env.DEV ? {} : {
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    })
   },
+  params: import.meta.env.DEV
+    ? {
+        serviceKey: SERVICE_KEY,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      }
+    : {
+        path: 'B551011/KorService2',
+      },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
@@ -366,18 +382,20 @@ export async function fetchDetailCommon(
 ): Promise<DetailCommonItem> {
   try {
     const { data } = await clientV2Detail.get('/detailCommon2', {
-      params: import.meta.env.DEV ? {
-        serviceKey: SERVICE_KEY,
-        contentId,
-        MobileOS: 'ETC',
-        MobileApp: 'harunekki',
-        _type: 'json',
-      } : {
-        contentId,
-        MobileOS: 'ETC',
-        MobileApp: 'harunekki',
-        _type: 'json',
-      },
+      params: import.meta.env.DEV
+        ? {
+            serviceKey: SERVICE_KEY,
+            contentId,
+            MobileOS: 'ETC',
+            MobileApp: 'harunekki',
+            _type: 'json',
+          }
+        : {
+            contentId,
+            MobileOS: 'ETC',
+            MobileApp: 'harunekki',
+            _type: 'json',
+          },
     });
     throwIfSimpleError(data, 'detailCommon2');
     const json = ensureJson<ApiListResponse>(data);
