@@ -18,20 +18,48 @@ export default function AuthCallback() {
 
       const user = session.user;
 
-      // 1) users 행 보장 (중복/경합 안전하게 upsert)
-      const { error: upsertErr } = await supabase
+      // 1) users 행 보장 (기존 데이터 보존 - 이름 null로 덮어쓰지 않음)
+      const metadataName =
+        (
+          user.user_metadata as Record<string, unknown> | undefined
+        )?.name?.toString?.() ??
+        (
+          user.user_metadata as Record<string, unknown> | undefined
+        )?.full_name?.toString?.() ??
+        null;
+
+      const { data: existing, error: fetchExistingErr } = await supabase
         .from('users')
-        .upsert(
-          { id: user.id, name: user.user_metadata?.name ?? null },
-          { onConflict: 'id' },
-        );
-      if (upsertErr) {
-        console.error('users upsert error:', upsertErr);
+        .select('id, name, age, gender')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (fetchExistingErr) {
+        console.error('users fetch-existing error:', fetchExistingErr);
         nav('/login', { replace: true });
         return;
       }
 
-      // 2) 온보딩 완료 여부 판단
+      if (!existing) {
+        const { error: insertErr } = await supabase
+          .from('users')
+          .insert({ id: user.id, name: metadataName });
+        if (insertErr) {
+          console.error('users insert error:', insertErr);
+          nav('/login', { replace: true });
+          return;
+        }
+      } else if (!existing.name && metadataName) {
+        // 기존 레코드의 name이 비어있고 메타데이터에 이름이 있으면 보강
+        const { error: updateErr } = await supabase
+          .from('users')
+          .update({ name: metadataName })
+          .eq('id', user.id);
+        if (updateErr) {
+          console.warn('users name backfill warning:', updateErr);
+        }
+      }
+
+      // 2) 온보딩 완료 여부 판단 (최신값 다시 조회)
       const { data: row, error: fetchErr } = await supabase
         .from('users')
         .select('name, age, gender')
