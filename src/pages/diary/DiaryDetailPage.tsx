@@ -217,39 +217,43 @@ const DiaryDetailPage = () => {
 
           {/* 스탬프 그리드 (2개씩) */}
           <div className="grid grid-cols-2 gap-6">
-            {placesByDay[day].map((place) => (
-              <Link
-                key={place.id}
-                to={`/diary/${id}/place/${place.id}`}
-                className="flex flex-col items-center"
-              >
-                {/* 스탬프 원형 이미지 */}
-                <div className="w-24 h-24 rounded-full overflow-hidden">
-                  {place.visited && place.stamp_data?.image_url ? (
-                    <img
-                      src={place.stamp_data.image_url}
-                      alt={place.place_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#F4F5F7]">
+            {placesByDay[day].map((place) => {
+              const displayName =
+                (place.stamp_data?.title || '').trim() || place.place_name;
+              return (
+                <Link
+                  key={place.id}
+                  to={`/diary/${id}/place/${place.id}`}
+                  className="flex flex-col items-center"
+                >
+                  {/* 스탬프 원형 이미지 */}
+                  <div className="w-24 h-24 rounded-full overflow-hidden">
+                    {place.visited && place.stamp_data?.image_url ? (
                       <img
-                        src={stampIcon}
-                        alt="스탬프"
-                        className="w-24 h-24 opacity-60"
+                        src={place.stamp_data.image_url}
+                        alt={displayName}
+                        className="w-full h-full object-cover"
                       />
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#F4F5F7]">
+                        <img
+                          src={stampIcon}
+                          alt="스탬프"
+                          className="w-24 h-24 opacity-60"
+                        />
+                      </div>
+                    )}
+                  </div>
 
-                {/* 장소명 */}
-                <div className="mt-3 px-2 py-1 bg-[#FDFDFE] rounded-lg">
-                  <p className="text-xs text-[#596072] font-kakaoSmall text-center truncate">
-                    {place.place_name}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                  {/* 장소명 (기록에 입력한 제목 우선) */}
+                  <div className="mt-3 px-2 py-1 bg-[#FDFDFE] rounded-lg">
+                    <p className="text-xs text-[#596072] font-kakaoSmall text-center truncate">
+                      {displayName}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       ))}

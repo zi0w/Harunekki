@@ -8,28 +8,46 @@ const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 const BASE = import.meta.env.DEV ? '/tourapi' : '/api';
 
 const clientV2 = axios.create({
-  baseURL: `${BASE}/B551011/KorService2`,
+  baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { Accept: 'application/json' },
-  params: {
-    serviceKey: SERVICE_KEY, // ← 키는 여기서 한 번만
-    MobileOS: 'ETC',
-    MobileApp: 'harunekki',
-    _type: 'json',
+  headers: {
+    Accept: 'application/json',
+    ...(import.meta.env.DEV
+      ? {}
+      : { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` }),
   },
+  params: import.meta.env.DEV
+    ? {
+        serviceKey: SERVICE_KEY,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      }
+    : {
+        path: 'B551011/KorService2',
+      },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
 const clientV2Detail = axios.create({
-  baseURL: `${BASE}/B551011/KorService2`,
+  baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
   timeout: 30000,
-  headers: { Accept: 'application/json' },
-  params: {
-    serviceKey: SERVICE_KEY,
-    MobileOS: 'ETC',
-    MobileApp: 'harunekki',
-    _type: 'json',
+  headers: {
+    Accept: 'application/json',
+    ...(import.meta.env.DEV
+      ? {}
+      : { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` }),
   },
+  params: import.meta.env.DEV
+    ? {
+        serviceKey: SERVICE_KEY,
+        MobileOS: 'ETC',
+        MobileApp: 'harunekki',
+        _type: 'json',
+      }
+    : {
+        path: 'B551011/KorService2',
+      },
   validateStatus: (s) => s >= 200 && s < 300,
 });
 
@@ -125,7 +143,7 @@ function ensureJson<T>(data: unknown): T {
     }
     try {
       return JSON.parse(s) as T;
-    } catch (parseError) {
+    } catch {
       throw new Error(`String payload is not JSON: ${s.slice(0, 200)}`);
     }
   }
@@ -228,9 +246,18 @@ export async function fetchPopularRestaurants(
 
 /** ✅ 지역 코드 목록 */
 export async function fetchAreaCodes() {
-  const { data } = await clientV2.get('/areaCode2', {
-    params: { numOfRows: 50 },
-  });
+  const endpoint = 'areaCode2';
+  const { data } = await clientV2.get(
+    import.meta.env.DEV ? `/${endpoint}` : '',
+    {
+      params: {
+        numOfRows: 50,
+        ...(import.meta.env.DEV
+          ? {}
+          : { path: `B551011/KorService2/${endpoint}` }),
+      },
+    },
+  );
   const json = ensureJson<ApiListResponse>(data);
   const body = guardBody(json, 'areaCode2');
   return body.items?.item ?? [];
@@ -256,24 +283,31 @@ export async function fetchAreaBasedList({
   signal?: AbortSignal;
   keyword?: string;
 }) {
-  const endpoint = keyword ? '/searchKeyword2' : '/areaBasedList2';
+  // 엔드포인트 이름만 보관 (프록시 용이성)
+  const endpoint = keyword ? 'searchKeyword2' : 'areaBasedList2';
 
   try {
-    const { data } = await clientV2.get(endpoint, {
-      params: {
-        arrange,
-        pageNo,
-        numOfRows,
-        areaCode,
-        sigunguCode,
-        contentTypeId,
-        ...(keyword ? { keyword } : {}),
+    const { data } = await clientV2.get(
+      import.meta.env.DEV ? `/${endpoint}` : '',
+      {
+        params: {
+          arrange,
+          pageNo,
+          numOfRows,
+          areaCode,
+          sigunguCode,
+          contentTypeId,
+          ...(keyword ? { keyword } : {}),
+          ...(import.meta.env.DEV
+            ? {}
+            : { path: `B551011/KorService2/${endpoint}` }),
+        },
+        signal,
       },
-      signal,
-    });
+    );
 
     const json = ensureJson<ApiListResponse>(data);
-    const body = guardBody(json, endpoint.replace('/', ''));
+    const body = guardBody(json, endpoint);
     const items = body.items?.item ?? [];
 
     // ✅ Supabase 캐시에 저장
@@ -345,15 +379,27 @@ export async function fetchDetailCommon(
   contentId: string,
 ): Promise<DetailCommonItem> {
   try {
-    const { data } = await clientV2Detail.get('/detailCommon2', {
-      params: {
-        serviceKey: SERVICE_KEY,
-        contentId,
-        MobileOS: 'ETC',
-        MobileApp: 'harunekki',
-        _type: 'json',
+    const endpoint = 'detailCommon2';
+    const { data } = await clientV2Detail.get(
+      import.meta.env.DEV ? `/${endpoint}` : '',
+      {
+        params: import.meta.env.DEV
+          ? {
+              serviceKey: SERVICE_KEY,
+              contentId,
+              MobileOS: 'ETC',
+              MobileApp: 'harunekki',
+              _type: 'json',
+            }
+          : {
+              contentId,
+              MobileOS: 'ETC',
+              MobileApp: 'harunekki',
+              _type: 'json',
+              path: `B551011/KorService2/${endpoint}`,
+            },
       },
-    });
+    );
     throwIfSimpleError(data, 'detailCommon2');
     const json = ensureJson<ApiListResponse>(data);
     const body = guardBody(json, 'detailCommon2');
