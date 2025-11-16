@@ -16,15 +16,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
   });
 
-  // ✅ 3. 핵심 수정: TourAPI 키 추가 (누락 시 403 에러 발생 방지)
   if (TOURAPI_KEY) {
-    // 키가 이미 쿼리에 있다면 덮어쓰거나, 없다면 새로 추가
     url.searchParams.set('serviceKey', TOURAPI_KEY);
   } else {
     console.error('Vercel 환경 변수 TOURAPI_KEY가 설정되지 않았습니다.');
     return res.status(500).send('API Key is missing on the server.');
   }
-
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');

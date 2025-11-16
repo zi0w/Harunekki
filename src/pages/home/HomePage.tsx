@@ -6,7 +6,12 @@ import ArrowLocation from '@/assets/icons/home/location.svg';
 import LikeLocation from '@/assets/icons/home/heart.svg';
 import BannerCarousel from '@/components/shared/BannerCarousel';
 
-import { fetchAreaBasedList, type ListItem } from '@/lib/api/tourapi';
+// import { fetchAreaBasedList, type ListItem } from '@/lib/api/tourapi';
+import {
+  fetchPopularRestaurants,
+  type PopularRestaurant,
+} from '@/lib/api/tourapi';
+
 import { fetchSeasonalFoods } from '@/lib/api/seasonalFoods';
 
 type Food = {
@@ -169,6 +174,8 @@ const HomePage = () => {
   }, []);
 
   // 인기 식당
+  // 인기 식당
+  // 인기 식당
   useEffect(() => {
     let cancelled = false;
 
@@ -176,22 +183,21 @@ const HomePage = () => {
       setHotLoading(true);
       setHotError(null);
       try {
-        const { items } = await fetchAreaBasedList({
-          contentTypeId: 39,
-          pageNo: 1,
-          numOfRows: 40,
-          arrange: 'Q',
-        });
+        // Supabase 뷰에서 상위 6개만 가져오기
+        const rows = await fetchPopularRestaurants(6);
 
-        const mapped = (items || []).map(mapToFood);
-        const withViews = mapped.map((m) => ({
-          ...m,
-          views: Math.floor(Math.random() * 5000) + 500,
+        if (cancelled) return;
+
+        const mapped: Food[] = rows.map((r) => ({
+          id: r.contentid, // 뷰에서 id 필드명이 다르면 여기를 맞춰줘
+          title: r.title ?? '',
+          location: r.addr1 ?? '주소 정보 없음',
+          img: r.firstimage || r.firstimage2 || '',
+          views: 0, // 이제 랜덤 뷰 안 쓴다면 0 고정 or 필드 삭제
+          likeCount: r.like_count ?? 0,
         }));
-        withViews.sort((a, b) => b.views - a.views);
 
-        const top = withViews.slice(0, 6);
-        if (!cancelled) setHotRestaurants(top);
+        setHotRestaurants(mapped);
       } catch (e: unknown) {
         const msg =
           e instanceof Error ? e.message : '인기 식당을 불러오지 못했습니다.';
