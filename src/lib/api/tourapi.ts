@@ -5,38 +5,7 @@ import { supabase } from '../supabase/supabase';
 const SERVICE_KEY = import.meta.env.VITE_TOURAPI_KEY;
 const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 
-/* ===============================
-   Axios Clients
-================================ */
-// const clientV2 = axios.create({
-//   baseURL: 'https://apis.data.go.kr/B551011/KorService2',
-//   timeout: 30000,
-//   headers: { Accept: 'application/json' },
-//   params: {
-//     serviceKey: SERVICE_KEY,
-//     MobileOS: 'ETC',
-//     MobileApp: 'harunekki',
-//     _type: 'json',
-//   },
-//   validateStatus: (s) => s >= 200 && s < 300,
-// });
-
-// const clientV2Detail = axios.create({
-//   baseURL: 'https://apis.data.go.kr/B551011/KorService2',
-//   timeout: 30000,
-//   headers: { Accept: 'application/json' },
-//   params: {
-//     serviceKey: SERVICE_KEY,
-//     MobileOS: 'ETC',
-//     MobileApp: 'harunekki',
-//     _type: 'json', // ✅ 이거 추가!
-//   },
-//   validateStatus: (s) => s >= 200 && s < 300,
-// });
-
-const BASE = import.meta.env.DEV
-  ? '/tourapi'
-  : 'https://fwezadzxkcczqsanqvyd.supabase.co/functions/v1/tourapi-proxy';
+const BASE = import.meta.env.DEV ? '/tourapi' : '/api';
 
 const clientV2 = axios.create({
   baseURL: import.meta.env.DEV ? `${BASE}/B551011/KorService2` : BASE,
@@ -251,15 +220,28 @@ export async function searchKakaoPlaces(query: string) {
 }
 
 /** ✅ 인기 식당 불러오기 (캐시 기반) */
-export async function fetchPopularRestaurants(limit = 50) {
+
+export type PopularRestaurant = {
+  contentid: string;
+  title: string;
+  addr1: string | null;
+  firstimage: string | null;
+  firstimage2: string | null;
+  like_count: number;
+};
+
+export async function fetchPopularRestaurants(
+  limit = 50,
+): Promise<PopularRestaurant[]> {
   const { data, error } = await supabase
     .from('popular_restaurants_with_likes')
-    .select('*')
+    .select('contentid,title,addr1,firstimage,firstimage2,like_count')
     .order('like_count', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
-  return data;
+  // supabase 타입이 any일 수 있으니까 한 번 캐스팅
+  return (data ?? []) as PopularRestaurant[];
 }
 
 /** ✅ 지역 코드 목록 */
