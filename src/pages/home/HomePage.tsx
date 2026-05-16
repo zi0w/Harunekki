@@ -9,7 +9,6 @@ import BannerCarousel from '@/components/shared/BannerCarousel';
 // import { fetchAreaBasedList, type ListItem } from '@/lib/api/tourapi';
 import {
   fetchPopularRestaurants,
-  type PopularRestaurant,
 } from '@/lib/api/tourapi';
 
 import { fetchSeasonalFoods } from '@/lib/api/seasonalFoods';
@@ -24,16 +23,16 @@ type Food = {
   isSeasonal?: boolean;
 };
 
-function mapToFood(it: ListItem): Food {
-  return {
-    id: it.contentid,
-    title: it.title ?? '',
-    location: it.addr1 ?? '주소 정보 없음',
-    img: it.firstimage || it.firstimage2 || '',
-    views: Math.floor(Math.random() * 3000) + 300,
-    likeCount: Math.floor(Math.random() * 500) + 50, // 랜덤 좋아요 수 (50-549)
-  };
-}
+// function mapToFood(it: ListItem): Food {
+//   return {
+//     id: it.contentid,
+//     title: it.title ?? '',
+//     location: it.addr1 ?? '주소 정보 없음',
+//     img: it.firstimage || it.firstimage2 || '',
+//     views: Math.floor(Math.random() * 3000) + 300,
+//     likeCount: Math.floor(Math.random() * 500) + 50, // 랜덤 좋아요 수 (50-549)
+//   };
+// }
 
 const SectionHeader = ({ title, to }: { title: string; to?: string }) => (
   <div className="flex w-full justify-between items-end">

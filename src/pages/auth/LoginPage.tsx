@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import titleImage from '@/assets/icons/login/login_main.png';
-import facebookLoginBtn from '@/assets/icons/login/login_facebook.png';
 import googleLoginBtn from '@/assets/icons/login/login_google.png';
 import kakaoLoginBtn from '@/assets/icons/login/login_kakao.png';
 import emailLoginBtn from '@/assets/icons/login/login_email.png';
