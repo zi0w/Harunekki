@@ -58,12 +58,6 @@ const LoginPage = () => {
         >
           <img src={kakaoLoginBtn} width={335} height={52} />
         </button>
-        <button
-          onClick={() => signIn('facebook')}
-          className="w-[335px] h-[52px] bg-[#F9FAFB] appearance-none border-none outline-none"
-        >
-          <img src={facebookLoginBtn} width={335} height={52} />
-        </button>
       </div>
     </div>
   );
